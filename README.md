@@ -41,8 +41,8 @@ Pessoas de todas as idades que desejam praticidade na consulta do clima, incluin
 - 🎯 Sensação térmica
 - 📶 Uso offline com cache da última consulta
 - 🗺️ Mapa interativo com previsão de nuvens e temperatura
-- ⚠️ Alertas meteorológicos (em breve)
-- 🌙 Modo claro/escuro (em breve)
+- ⚠️ Alertas meteorológicos
+- 🌙 Modo claro/escuro
 
 ---
 
