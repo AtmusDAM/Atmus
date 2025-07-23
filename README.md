@@ -1,4 +1,4 @@
-7# Atmus ☀️🌧️  
+## Atmus ☀️🌧️  
 Aplicativo Flutter para previsão do tempo com interface intuitiva, recursos avançados e uso offline. Inspirado nos apps Weather.com e AccuWeather, com foco em simplicidade, clareza e utilidade prática.
 
 ---
