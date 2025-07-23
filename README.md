@@ -1,4 +1,4 @@
-# Atmus ☀️🌧️  
+7# Atmus ☀️🌧️  
 Aplicativo Flutter para previsão do tempo com interface intuitiva, recursos avançados e uso offline. Inspirado nos apps Weather.com e AccuWeather, com foco em simplicidade, clareza e utilidade prática.
 
 ---
@@ -138,8 +138,8 @@ Testes de usabilidade foram realizados com 3 usuários com perfis distintos:
 
 1. Clone o repositório:
    ```bash
-   git clone https://github.com/AtmusDAM/atmus_app.git
-   cd atmus_app
+   git clone https://github.com/AtmusDAM/Atmus.git
+   cd Atmus
    ```
 
 2. Instale as dependências:
