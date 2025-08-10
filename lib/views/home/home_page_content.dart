@@ -101,7 +101,7 @@ class HomePageContent extends StatelessWidget {
                         children: [
                           const Text("Máxima", style: TextStyle(color: Colors.grey, fontSize: 12)),
                           const SizedBox(height: 4),
-                          Obx(() => Text("${controller.temperaturaMax.value} ºC",
+                          Obx(() => Text("${controller.temperaturaMax.value.toStringAsFixed(1)} ºC",
                               style: const TextStyle(color: Colors.white, fontSize: 16))),
                         ],
                       ),
@@ -110,7 +110,7 @@ class HomePageContent extends StatelessWidget {
                         children: [
                           const Text("Mínima", style: TextStyle(color: Colors.grey, fontSize: 12)),
                           const SizedBox(height: 4),
-                          Obx(() => Text("${controller.temperaturaMin.value} ºC",
+                          Obx(() => Text("${controller.temperaturaMin.value.toStringAsFixed(1)} ºC",
                               style: const TextStyle(color: Colors.white, fontSize: 16))),
                         ],
                       ),
@@ -167,7 +167,7 @@ class HomePageContent extends StatelessWidget {
                         const SizedBox(height: 8),
                         Text("Precipitação",
                             style: TextStyle(color: Colors.grey[400], fontSize: 12)),
-                        Obx(() => Text("${controller.sensacaoChuva.value} ºC",
+                        Obx(() => Text("${controller.sensacaoChuva.value} mm",
                             style: const TextStyle(color: Colors.white))),
                       ],
                     ),
