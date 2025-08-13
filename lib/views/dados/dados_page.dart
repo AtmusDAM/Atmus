@@ -103,7 +103,7 @@ class DadosPage extends StatelessWidget {
 
               Obx(() => Row(
                 children: [
-                  _buildCard("Vento", "${controller.vento.value} km/h", Icons.air),
+                  _buildCard("Vento", "${controller.vento.value} m/s", Icons.air),
                   const SizedBox(width: 8),
                   _buildCard("Índice UV", controller.indiceUV.value, Icons.wb_sunny),
                 ],

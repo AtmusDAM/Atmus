@@ -16,8 +16,6 @@ class ApiService {
     try {
       final response = await http.get(url);
       print('[Weather] GET $url -> ${response.statusCode}');
-      print('[Weather] body: ${response.body}');
-
       if (response.statusCode == 200) {
         return jsonDecode(response.body) as Map<String, dynamic>;
       } else {
@@ -25,6 +23,28 @@ class ApiService {
       }
     } catch (e) {
       print('[Weather] Erro na requisição: $e');
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> fetchWeatherForecast(String city) async {
+    final url = Uri.https(host, '/data/2.5/forecast', {
+      'q': city,
+      'appid': apiKey,
+      'lang': 'pt_br',
+      'units': 'metric',
+    });
+
+    try {
+      final response = await http.get(url);
+      print('[Forecast] GET $url -> ${response.statusCode}');
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body) as Map<String, dynamic>;
+      } else {
+        return null;
+      }
+    } catch (e) {
+      print('[Forecast] Erro na requisição: $e');
       return null;
     }
   }

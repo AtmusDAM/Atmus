@@ -39,6 +39,5 @@ class HomeController extends GetxController {
     descricaoTempo.value =
         (weatherList.isNotEmpty ? weatherList.first['description'] : null) ?? 'Sem dados';
 
-    print('Temperatura atual: ${temperaturaAtual.value}°C');
   }
 }

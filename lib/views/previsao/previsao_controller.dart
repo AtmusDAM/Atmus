@@ -10,23 +10,26 @@ class PrevisaoController extends GetxController {
     "Segunda": [0, 0],
     "Terça-feira": [0, 0],
     "Quarta-feira": [0, 0],
+    "Quinta-feira": [0, 0],
+    "Sexta-feira": [0, 0],
     "Sábado": [0, 0],
+    "Domingo": [0, 0],
   }.obs;
 
   var temperaturasHora = <String, int>{
-    "11:00h": 0,
+    "09:00h": 0,
     "12:00h": 0,
-    "13:00h": 0,
-    "14:00h": 0,
     "15:00h": 0,
-    "16:00h": 0,
-    "17:00h": 0,
     "18:00h": 0,
-    "19:00h": 0,
-    "20:00h": 0,
+    "21:00h": 0,
+    "00:00h": 0,
+    "03:00h": 0,
+    "06:00h": 0,
   }.obs;
 
   var resumo = "".obs;
+
+  var iconesHora = <String, String>{}.obs;
 
   @override
   void onInit() {
@@ -35,38 +38,69 @@ class PrevisaoController extends GetxController {
   }
 
   Future<void> fetchWeatherData(String city) async {
-    final data = await apiService.fetchCurrentWeather(city);
+    final data = await apiService.fetchWeatherForecast(city);
+    print("Dados brutos da API:");
+    print(data);
     if (data != null) {
       try {
-        // Atualiza resumo
-        resumo.value = data['forecast']['forecastday'][0]['day']['condition']['text'] ?? "";
+        resumo.value = data['list'][0]['weather'][0]['description'] ?? "";
 
-        // Atualiza temperaturas diárias
-        for (var day in data['forecast']['forecastday']) {
-          final date = DateTime.parse(day['date']);
-          final diaSemana = _formatDay(date);
+        Map<String, List<num>> tempsPorDia = {};
 
-          temperaturas[diaSemana] = [
-            (day['day']['mintemp_c'] as num).round(),
-            (day['day']['maxtemp_c'] as num).round(),
-          ];
+        for (var item in data['list']) {
+          final dt = DateTime.parse(item['dt_txt']);
+          final diaStr = "${dt.year}-${dt.month.toString().padLeft(2,'0')}-${dt.day.toString().padLeft(2,'0')}";
+
+          final temp = (item['main']['temp'] as num);
+
+          if (!tempsPorDia.containsKey(diaStr)) {
+            tempsPorDia[diaStr] = [];
+          }
+          tempsPorDia[diaStr]!.add(temp);
         }
 
-        // Atualiza temperaturas por hora (do dia atual)
-        final hours = data['forecast']['forecastday'][0]['hour'];
-        for (var hora in temperaturasHora.keys.toList()) {
-          final hourInt = int.parse(hora.split(':')[0]);
-          final entry = hours.firstWhere(
-                (h) => DateTime.parse(h['time']).hour == hourInt,
-            orElse: () => null,
+        temperaturas.clear();
+
+        tempsPorDia.forEach((diaStr, temps) {
+          final date = DateTime.parse(diaStr);
+          final dayName = _formatDay(date);
+          final minTemp = temps.reduce((a, b) => a < b ? a : b).round();
+          final maxTemp = temps.reduce((a, b) => a > b ? a : b).round();
+
+          temperaturas[dayName] = [minTemp, maxTemp];
+        });
+
+        temperaturas.refresh();
+
+        for (var horaStr in temperaturasHora.keys.toList()) {
+          final hourInt = int.parse(horaStr.split(':')[0]);
+
+          final item = data['list'].firstWhere(
+                (i) {
+              final dt = DateTime.parse(i['dt_txt']);
+              return dt.hour == hourInt;
+            },
+            orElse: () => {},
           );
-          if (entry != null) {
-            temperaturasHora[hora] = (entry['temp_c'] as num).round();
+
+          if (item.isNotEmpty) {
+            temperaturasHora[horaStr] = (item['main']['temp'] as num).round();
+            iconesHora[horaStr] = item['weather'][0]['icon'];
+          }
+
+          if (item != null) {
+            temperaturasHora[horaStr] = (item['main']['temp'] as num).round();
+            iconesHora[horaStr] = item['weather'][0]['icon'];
           }
         }
+
+        temperaturasHora.refresh();
+        iconesHora.refresh();
       } catch (e) {
         print("Erro ao processar dados de previsão: $e");
       }
+    } else {
+      print("Dados da API são nulos");
     }
   }
 
@@ -81,10 +115,14 @@ class PrevisaoController extends GetxController {
       7: "Domingo",
     };
     final hoje = DateTime.now();
-    final ontem = hoje.subtract(Duration(days: 1));
+    final ontem = hoje.subtract(const Duration(days: 1));
 
-    if (date.day == ontem.day && date.month == ontem.month) return "Ontem";
-    if (date.day == hoje.day && date.month == hoje.month) return "Hoje";
+    if (date.day == ontem.day && date.month == ontem.month && date.year == ontem.year) {
+      return "Ontem";
+    }
+    if (date.day == hoje.day && date.month == hoje.month && date.year == hoje.year) {
+      return "Hoje";
+    }
     return diasSemana[date.weekday] ?? "";
   }
 }
