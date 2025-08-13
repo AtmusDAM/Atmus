@@ -1,26 +1,30 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-// esboço do apiService(adicionar chave)
 class ApiService {
-  final String apiKey = 'CHAVE_API';
-  final String baseUrl = 'http://api.weatherapi.com/v1';
+  final String apiKey = 'b2a53975e7848b3254d83a2a62116856';
+  final String host = 'api.openweathermap.org';
 
   Future<Map<String, dynamic>?> fetchCurrentWeather(String city) async {
-    final url = Uri.parse('$baseUrl/current.json?key=$apiKey&q=$city&lang=pt');
+    final url = Uri.https(host, '/data/2.5/weather', {
+      'q': city,
+      'appid': apiKey,
+      'lang': 'pt_br',
+      'units': 'metric',
+    });
 
     try {
       final response = await http.get(url);
+      print('[Weather] GET $url -> ${response.statusCode}');
+      print('[Weather] body: ${response.body}');
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return data;
+        return jsonDecode(response.body) as Map<String, dynamic>;
       } else {
-        print('Erro ao buscar dados: ${response.statusCode}');
         return null;
       }
     } catch (e) {
-      print('Erro na requisição: $e');
+      print('[Weather] Erro na requisição: $e');
       return null;
     }
   }

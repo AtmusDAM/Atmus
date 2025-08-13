@@ -4,7 +4,11 @@ import 'package:get/get.dart';
 import 'home_controller.dart';
 
 class HomePageContent extends StatelessWidget {
-  final controller = Get.find<HomeController>();
+  HomePageContent({super.key});
+
+  final controller = Get.isRegistered<HomeController>()
+      ? Get.find<HomeController>()
+      : Get.put(HomeController());
 
   @override
   Widget build(BuildContext context) {
