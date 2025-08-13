@@ -2,14 +2,14 @@ import 'package:atmus/services/api_service.dart';
 import 'package:get/get.dart';
 
 class HomeController extends GetxController {
-  var temperaturaAtual = 25.0.obs;
-  var temperaturaMin = 18.0.obs;
-  var temperaturaMax = 28.0.obs;
-  var sensacaoSol = 27.0.obs;
-  var sensacaoChuva = 27.0.obs;
-  var descricaoTempo = "Parcialmente nublado".obs;
-
   var selectedIndex = 0.obs;
+
+  var temperaturaAtual = 0.0.obs;
+  var temperaturaMin = 0.0.obs;
+  var temperaturaMax = 0.0.obs;
+  var sensacaoSol   = 0.0.obs;
+  var sensacaoChuva = 0.0.obs;
+  var descricaoTempo = 'Carregando...'.obs;
 
   @override
   void onInit() {
@@ -17,29 +17,28 @@ class HomeController extends GetxController {
     getWeather();
   }
 
-  // funçao de teste para dados da API
-  void getWeather() async {
-    ApiService apiService = ApiService();
-    var weatherData = await apiService.fetchCurrentWeather('Recife');
+  Future<void> getWeather() async {
+    final api = ApiService();
+    final data = await api.fetchCurrentWeather('Recife,BR');
 
-    if (weatherData != null) {
-      double temp = weatherData['current']['temp_c']?.toDouble() ?? 0.0;
-      double tempMin = weatherData['forecast']?['forecastday']?[0]?['day']?['mintemp_c']?.toDouble() ?? 0.0;
-      double tempMax = weatherData['forecast']?['forecastday']?[0]?['day']?['maxtemp_c']?.toDouble() ?? 0.0;
-      String desc = weatherData['current']['condition']['text'] ?? 'Sem dados';
-
-      sensacaoSol.value = weatherData['current']['feelslike_c']?.toDouble() ?? 0.0;
-      sensacaoChuva.value = weatherData['current']['precip_mm']?.toDouble() ?? 0.0;
-
-
-      temperaturaAtual.value = temp;
-      temperaturaMin.value = tempMin;
-      temperaturaMax.value = tempMax;
-      descricaoTempo.value = desc;
-
-      print('Temperatura atual: $temp');
-    } else {
+    if (data == null) {
       print('Falha ao carregar dados do tempo.');
+      return;
     }
+
+    final main = (data['main'] ?? {}) as Map;
+    temperaturaAtual.value = (main['temp'] as num?)?.toDouble() ?? 0.0;
+    temperaturaMin.value   = (main['temp_min'] as num?)?.toDouble() ?? 0.0;
+    temperaturaMax.value   = (main['temp_max'] as num?)?.toDouble() ?? 0.0;
+    sensacaoSol.value      = (main['feels_like'] as num?)?.toDouble() ?? 0.0;
+
+    final rain = (data['rain'] ?? {}) as Map;
+    sensacaoChuva.value    = (rain['1h'] as num?)?.toDouble() ?? 0.0;
+
+    final weatherList = (data['weather'] as List?) ?? const [];
+    descricaoTempo.value =
+        (weatherList.isNotEmpty ? weatherList.first['description'] : null) ?? 'Sem dados';
+
+    print('Temperatura atual: ${temperaturaAtual.value}°C');
   }
 }
