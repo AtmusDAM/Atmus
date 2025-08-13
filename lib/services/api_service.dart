@@ -1,14 +1,15 @@
 import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  final String apiKey = 'b2a53975e7848b3254d83a2a62116856';
-  final String host = 'api.openweathermap.org';
+  final String _apiKey = dotenv.env['API_KEY'] ?? 'missing_api_key';
+  final String _host = dotenv.env['API_HOST'] ?? 'missing_api_host';
 
   Future<Map<String, dynamic>?> fetchCurrentWeather(String city) async {
-    final url = Uri.https(host, '/data/2.5/weather', {
+    final url = Uri.https(_host, '/data/2.5/weather', {
       'q': city,
-      'appid': apiKey,
+      'appid': _apiKey,
       'lang': 'pt_br',
       'units': 'metric',
     });
