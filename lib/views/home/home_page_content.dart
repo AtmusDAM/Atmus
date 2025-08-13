@@ -1,4 +1,5 @@
 import 'package:atmus/views/configuracao/configuracao_page.dart';
+import 'package:atmus/widgets/mapa_widget_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'home_controller.dart';
@@ -182,14 +183,12 @@ class HomePageContent extends StatelessWidget {
 
             const SizedBox(height: 16),
 
-            // Mapa exemplo
-            ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: Image.asset(
-                'assets/mapa_exemplo.png',
-                fit: BoxFit.cover,
-                height: 150,
-                width: double.infinity,
+            SizedBox(
+              height: 350,
+              width: double.infinity,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: MiniMapaWidget(),
               ),
             ),
           ],
