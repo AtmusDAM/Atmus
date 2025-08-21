@@ -1,15 +1,24 @@
-import 'package:atmus/views/configuracao/configuracao_page.dart';
-import 'package:atmus/widgets/mapa_widget_page.dart';
+import 'package:atmus/ui/pages/configuracao/configuracao_page.dart';
+import 'package:atmus/ui/widgets/mapa_widget_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'home_controller.dart';
+import 'package:atmus/viewmodels/home/home_viewmodel.dart';
 
 class HomePageContent extends StatelessWidget {
   HomePageContent({super.key});
 
-  final controller = Get.isRegistered<HomeController>()
-      ? Get.find<HomeController>()
-      : Get.put(HomeController());
+  final controller = Get.find<HomeViewModel>();
+
+  Widget _getWeatherIcon(String iconCode) {
+    if (iconCode.isEmpty) {
+      return const Icon(Icons.cloud, color: Colors.white, size: 48);
+    }
+    return Image.network(
+      'http://openweathermap.org/img/wn/$iconCode@2x.png',
+      width: 50,
+      height: 50,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -92,7 +101,7 @@ class HomePageContent extends StatelessWidget {
                               style: TextStyle(color: Colors.grey, fontSize: 12)),
                         ],
                       ),
-                      const Icon(Icons.cloud, color: Colors.white, size: 48),
+                      Obx(() => _getWeatherIcon(controller.weatherIcon.value)),
                     ],
                   ),
                   const SizedBox(height: 32),
@@ -148,7 +157,7 @@ class HomePageContent extends StatelessWidget {
                         const SizedBox(height: 8),
                         Text("Sensação",
                             style: TextStyle(color: Colors.grey[400], fontSize: 12)),
-                        Obx(() => Text("${controller.sensacaoSol.value} ºC",
+                        Obx(() => Text("${controller.sensacaoSol.value.toStringAsFixed(1)} ºC",
                             style: const TextStyle(color: Colors.white))),
                       ],
                     ),
