@@ -32,8 +32,6 @@ class DadosViewModel extends GetxController {
     final Forecast? forecast = await _repository.getWeatherForecast("Recife,BR");
     if (forecast != null) {
       _calculatePrecipitation(forecast.items);
-    } else {
-      print("[DadosViewModel] Falha ao carregar dados da previsão.");
     }
   }
 

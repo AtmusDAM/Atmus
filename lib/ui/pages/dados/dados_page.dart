@@ -1,11 +1,11 @@
-import 'package:atmus/ui/pages/home/home_controller.dart';
+import 'package:atmus/viewmodels/home/home_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'dados_controller.dart';
+import 'package:atmus/viewmodels/dados/dados_viewmodel.dart';
 
 class DadosPage extends StatelessWidget {
   DadosPage({super.key});
-  final controller = Get.put(DadosController());
+  final controller = Get.put(DadosViewModel());
 
   Widget _buildCard(String title, String value, IconData icon) {
     return Expanded(
@@ -68,8 +68,8 @@ class DadosPage extends StatelessWidget {
                   IconButton(
                     icon: const Icon(Icons.arrow_back, color: Colors.white),
                     onPressed: () {
-                      final controller = Get.find<HomeController>();
-                      controller.selectedIndex.value = 0; // volta para a aba Home
+                      final homeController = Get.find<HomeViewModel>();
+                      homeController.selectedIndex.value = 0; // volta para a aba Home
                     },
                   ),
                   const Text("Recife, PE", style: TextStyle(color: Colors.white, fontSize: 18)),
@@ -93,7 +93,7 @@ class DadosPage extends StatelessWidget {
 
               Obx(() => Row(
                 children: [
-                  _buildCard("Pressão", "${controller.pressao.value} mb", Icons.speed),
+                  _buildCard("Pressão", "${controller.pressao.value.toStringAsFixed(0)} mb", Icons.speed),
                   const SizedBox(width: 8),
                   _buildCard("Umidade", "${controller.umidade.value}%", Icons.water_drop),
                 ],
@@ -103,7 +103,7 @@ class DadosPage extends StatelessWidget {
 
               Obx(() => Row(
                 children: [
-                  _buildCard("Vento", "${controller.vento.value} m/s", Icons.air),
+                  _buildCard("Vento", "${controller.vento.value.toStringAsFixed(1)} m/s", Icons.air),
                   const SizedBox(width: 8),
                   _buildCard("Índice UV", controller.indiceUV.value, Icons.wb_sunny),
                 ],

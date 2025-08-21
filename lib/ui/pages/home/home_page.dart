@@ -1,20 +1,20 @@
-import 'package:atmus/ui/pages//previsao/previsao_page.dart';
+import 'package:atmus/ui/pages/configuracao/configuracao_page.dart';
+import 'package:atmus/ui/pages/previsao/previsao_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'home_controller.dart';
+import 'package:atmus/viewmodels/home/home_viewmodel.dart';
 import 'home_page_content.dart';
 import '../dados/dados_page.dart';
-// import '../mapa/mapa_page.dart'; // quando existir
 
 class HomePage extends StatelessWidget {
   HomePage({super.key});
-  final controller = Get.put(HomeController());
+  final controller = Get.put(HomeViewModel());
 
   final List<Widget> pages = [
     HomePageContent(),
-    PrevisaoPage(),
     DadosPage(),
-    // MapaPage(), // comente até criar
+    PrevisaoPage(),
+    ConfiguracaoPage(),
   ];
 
   @override

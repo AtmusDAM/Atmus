@@ -1,20 +1,31 @@
-import 'package:atmus/ui/pages/home/home_controller.dart';
+import 'package:atmus/viewmodels/home/home_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'previsao_controller.dart';
+import 'package:atmus/viewmodels/previsao/previsao_viewmodel.dart';
 
 class PrevisaoPage extends StatelessWidget {
   PrevisaoPage({Key? key}) : super(key: key);
 
-  final PrevisaoController controller = Get.put(PrevisaoController());
+  final PrevisaoViewModel controller = Get.put(PrevisaoViewModel());
 
-  Widget _buildHoraItem(String hora, int temp) {
+  Widget _getWeatherIcon(String iconCode) {
+    if (iconCode.isEmpty) {
+      return const Icon(Icons.wb_sunny, color: Colors.yellow, size: 26);
+    }
+    return Image.network(
+      'http://openweathermap.org/img/wn/$iconCode@2x.png',
+      width: 26,
+      height: 26,
+    );
+  }
+
+  Widget _buildHoraItem(String hora, int temp, String iconCode) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(hora, style: const TextStyle(color: Colors.white70, fontSize: 12)),
         const SizedBox(height: 6),
-        const Icon(Icons.wb_sunny, color: Colors.yellow, size: 26),
+        _getWeatherIcon(iconCode),
         const SizedBox(height: 6),
         Text("$temp°",
             style: const TextStyle(
@@ -75,8 +86,8 @@ class PrevisaoPage extends StatelessWidget {
                   IconButton(
                     icon: const Icon(Icons.arrow_back, color: Colors.white),
                     onPressed: () {
-                      final controller = Get.find<HomeController>();
-                      controller.selectedIndex.value = 0;
+                      final homeController = Get.find<HomeViewModel>();
+                      homeController.selectedIndex.value = 0;
                     },
                   ),
                   const Text("Recife, PE",
@@ -113,16 +124,17 @@ class PrevisaoPage extends StatelessWidget {
                     const SizedBox(height: 24),
                     SizedBox(
                       height: 90,
-                      child: ListView.separated(
+                      child: Obx(() => ListView.separated(
                         scrollDirection: Axis.horizontal,
                         itemCount: controller.temperaturasHora.length,
                         separatorBuilder: (_, __) => const SizedBox(width: 16),
                         itemBuilder: (_, index) {
                           final hora = controller.temperaturasHora.keys.elementAt(index);
                           final temp = controller.temperaturasHora[hora]!;
-                          return _buildHoraItem(hora, temp);
+                          final iconCode = controller.iconesHora[hora] ?? '';
+                          return _buildHoraItem(hora, temp, iconCode);
                         },
-                      ),
+                      )),
                     ),
                   ],
                 ),
@@ -132,12 +144,12 @@ class PrevisaoPage extends StatelessWidget {
 
               // Card 2: previsão dias
               Obx(() => _buildCard(
-                child: Column(
+                child: Obx(() => Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: controller.temperaturas.entries
                       .map((e) => _buildDiaItem(e.key, e.value))
                       .toList(),
-                ),
+                )),
               )),
             ],
           ),

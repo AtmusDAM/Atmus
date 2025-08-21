@@ -33,7 +33,6 @@ class HomeViewModel extends GetxController {
       descricaoTempo.value = weather.description;
       weatherIcon.value = weather.icon;
     } else {
-      print('Falha ao carregar dados do tempo.');
       descricaoTempo.value = 'Erro ao carregar';
     }
   }
