@@ -1,5 +1,5 @@
-import 'package:atmus/views/configuracao/configuracao_page.dart';
-import 'package:atmus/widgets/mapa_widget_page.dart';
+import 'package:atmus/ui/pages/configuracao/configuracao_page.dart';
+import 'package:atmus/ui/widgets/mapa_widget_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'home_controller.dart';
