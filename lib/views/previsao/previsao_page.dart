@@ -1,4 +1,4 @@
-import 'package:atmus/ui/home/home_controller.dart';
+import 'package:atmus/views/home/home_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'previsao_controller.dart';
