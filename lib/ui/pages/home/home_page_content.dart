@@ -1,4 +1,4 @@
-import 'package:atmus/views/configuracao/configuracao_page.dart';
+import 'package:atmus/ui/configuracao/configuracao_page.dart';
 import 'package:atmus/widgets/mapa_widget_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
