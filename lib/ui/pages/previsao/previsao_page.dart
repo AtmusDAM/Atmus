@@ -27,9 +27,14 @@ class PrevisaoPage extends StatelessWidget {
         const SizedBox(height: 6),
         _getWeatherIcon(iconCode),
         const SizedBox(height: 6),
-        Text("$temp°",
-            style: const TextStyle(
-                color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+        Text(
+          "$temp°",
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ],
     );
   }
@@ -43,12 +48,20 @@ class PrevisaoPage extends StatelessWidget {
           Text(dia, style: const TextStyle(color: Colors.white)),
           Row(
             children: [
-              Text("${tempMinMax[0]}°", style: const TextStyle(color: Colors.grey)),
+              Text(
+                "${tempMinMax[0]}°",
+                style: const TextStyle(color: Colors.grey),
+              ),
               const SizedBox(width: 8),
-              Text("${tempMinMax[1]}°",
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              Text(
+                "${tempMinMax[1]}°",
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ],
-          )
+          ),
         ],
       ),
     );
@@ -59,10 +72,7 @@ class PrevisaoPage extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF1B263B),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.grey.shade800,
-          width: 1,
-        ),
+        border: Border.all(color: Colors.grey.shade800, width: 1),
       ),
       padding: const EdgeInsets.all(16),
       child: child,
@@ -90,8 +100,10 @@ class PrevisaoPage extends StatelessWidget {
                       homeController.selectedIndex.value = 0;
                     },
                   ),
-                  const Text("Recife, PE",
-                      style: TextStyle(color: Colors.white, fontSize: 18)),
+                  const Text(
+                    "Recife, PE",
+                    style: TextStyle(color: Colors.white, fontSize: 18),
+                  ),
                   IconButton(
                     icon: const Icon(Icons.menu, color: Colors.white),
                     onPressed: () {},
@@ -104,53 +116,63 @@ class PrevisaoPage extends StatelessWidget {
               const Text(
                 "Previsão do tempo",
                 style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.2),
+                  color: Colors.white,
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.2,
+                ),
               ),
 
               const SizedBox(height: 12),
 
               // Card 1: resumo + previsão hora a hora
-              Obx(() => _buildCard(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      controller.resumo.value,
-                      style: const TextStyle(color: Colors.white70, fontSize: 14),
-                    ),
-                    const SizedBox(height: 24),
-                    SizedBox(
-                      height: 90,
-                      child: Obx(() => ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: controller.temperaturasHora.length,
-                        separatorBuilder: (_, __) => const SizedBox(width: 16),
-                        itemBuilder: (_, index) {
-                          final hora = controller.temperaturasHora.keys.elementAt(index);
-                          final temp = controller.temperaturasHora[hora]!;
-                          final iconCode = controller.iconesHora[hora] ?? '';
-                          return _buildHoraItem(hora, temp, iconCode);
-                        },
-                      )),
-                    ),
-                  ],
+              _buildCard(
+                child: Obx(
+                  () => Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        controller.resumo.value,
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 14,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        height: 90,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: controller.temperaturasHora.length,
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(width: 16),
+                          itemBuilder: (_, index) {
+                            final hora = controller.temperaturasHora.keys
+                                .elementAt(index);
+                            final temp = controller.temperaturasHora[hora]!;
+                            final iconCode = controller.iconesHora[hora] ?? '';
+                            return _buildHoraItem(hora, temp, iconCode);
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              )),
+              ),
 
               const SizedBox(height: 32),
 
               // Card 2: previsão dias
-              Obx(() => _buildCard(
-                child: Obx(() => Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: controller.temperaturas.entries
-                      .map((e) => _buildDiaItem(e.key, e.value))
-                      .toList(),
-                )),
-              )),
+              _buildCard(
+                child: Obx(
+                  () => Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: controller.temperaturas.entries
+                        .map((e) => _buildDiaItem(e.key, e.value))
+                        .toList(),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
