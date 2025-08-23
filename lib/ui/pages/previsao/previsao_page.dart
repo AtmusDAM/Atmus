@@ -14,28 +14,38 @@ class PrevisaoPage extends StatelessWidget {
     }
     return Image.network(
       'http://openweathermap.org/img/wn/$iconCode@2x.png',
-      width: 26,
-      height: 26,
+      width: 22,
+      height: 22,
+      errorBuilder: (context, error, StackTrace) {
+        return const Icon(Icons.wb_sunny, color: Colors.yellow, size: 22);
+      },
     );
   }
 
   Widget _buildHoraItem(String hora, int temp, String iconCode) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(hora, style: const TextStyle(color: Colors.white70, fontSize: 12)),
-        const SizedBox(height: 6),
-        _getWeatherIcon(iconCode),
-        const SizedBox(height: 6),
-        Text(
-          "$temp°",
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
+    return Container(
+      width: 60,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            hora,
+            style: const TextStyle(color: Colors.white70, fontSize: 11),
+            overflow: TextOverflow.ellipsis,
           ),
-        ),
-      ],
+          const SizedBox(height: 4),
+          _getWeatherIcon(iconCode),
+          const SizedBox(height: 4),
+          Text(
+            "$temp°",
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
