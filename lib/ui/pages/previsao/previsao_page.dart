@@ -10,7 +10,7 @@ class PrevisaoPage extends StatelessWidget {
 
   Widget _getWeatherIcon(String iconCode) {
     if (iconCode.isEmpty) {
-      return const Icon(Icons.wb_sunny, color: Colors.yellow, size: 26);
+      return const Icon(Icons.wb_sunny, color: Colors.yellow, size: 22);
     }
     return Image.network(
       'http://openweathermap.org/img/wn/$iconCode@2x.png',
@@ -40,7 +40,7 @@ class PrevisaoPage extends StatelessWidget {
             "$temp°",
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 16,
+              fontSize: 14,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -94,13 +94,11 @@ class PrevisaoPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFF0D1B2A),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Top bar
-              Row(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   IconButton(
@@ -110,9 +108,12 @@ class PrevisaoPage extends StatelessWidget {
                       homeController.selectedIndex.value = 0;
                     },
                   ),
-                  const Text(
-                    "Recife, PE",
-                    style: TextStyle(color: Colors.white, fontSize: 18),
+                  const Flexible(
+                    child: Text(
+                      "Recife, PE",
+                      style: TextStyle(color: Colors.white, fontSize: 18),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                   IconButton(
                     icon: const Icon(Icons.menu, color: Colors.white),
@@ -120,71 +121,83 @@ class PrevisaoPage extends StatelessWidget {
                   ),
                 ],
               ),
+            ),
 
-              const SizedBox(height: 24),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "Previsão do tempo",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
 
-              const Text(
-                "Previsão do tempo",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.2,
-                ),
-              ),
+                    const SizedBox(height: 12),
 
-              const SizedBox(height: 12),
-
-              // Card 1: resumo + previsão hora a hora
-              _buildCard(
-                child: Obx(
-                  () => Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        controller.resumo.value,
-                        style: const TextStyle(
-                          color: Colors.white70,
-                          fontSize: 14,
+                    // Card 1: resumo + previsão hora a hora
+                    _buildCard(
+                      child: Obx(
+                        () => Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              controller.resumo.value,
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            SizedBox(
+                              height: 85,
+                              child: ListView.separated(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: controller.temperaturasHora.length,
+                                separatorBuilder: (_, __) =>
+                                    const SizedBox(width: 12),
+                                itemBuilder: (_, index) {
+                                  final hora = controller.temperaturasHora.keys
+                                      .elementAt(index);
+                                  final temp =
+                                      controller.temperaturasHora[hora]!;
+                                  final iconCode =
+                                      controller.iconesHora[hora] ?? '';
+                                  return _buildHoraItem(hora, temp, iconCode);
+                                },
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 24),
-                      SizedBox(
-                        height: 90,
-                        child: ListView.separated(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: controller.temperaturasHora.length,
-                          separatorBuilder: (_, __) =>
-                              const SizedBox(width: 16),
-                          itemBuilder: (_, index) {
-                            final hora = controller.temperaturasHora.keys
-                                .elementAt(index);
-                            final temp = controller.temperaturasHora[hora]!;
-                            final iconCode = controller.iconesHora[hora] ?? '';
-                            return _buildHoraItem(hora, temp, iconCode);
-                          },
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Card 2: previsão dias
+                    _buildCard(
+                      child: Obx(
+                        () => Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: controller.temperaturas.entries
+                              .map((e) => _buildDiaItem(e.key, e.value))
+                              .toList(),
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+
+                    const SizedBox(height: 23),
+                  ],
                 ),
               ),
-
-              const SizedBox(height: 32),
-
-              // Card 2: previsão dias
-              _buildCard(
-                child: Obx(
-                  () => Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: controller.temperaturas.entries
-                        .map((e) => _buildDiaItem(e.key, e.value))
-                        .toList(),
-                  ),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
