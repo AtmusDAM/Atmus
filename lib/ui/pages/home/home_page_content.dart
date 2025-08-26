@@ -67,7 +67,7 @@ class HomePageContent extends StatelessWidget {
                 IconButton(
                   icon: const Icon(Icons.menu, color: Colors.white),
                   onPressed: () {
-                    // TODO: abrir drawer ou menu lateral
+                    Scaffold.of(context).openDrawer();
                   },
                 ),
               ],
@@ -75,7 +75,6 @@ class HomePageContent extends StatelessWidget {
 
             const SizedBox(height: 24),
 
-            // Cartão: Agora
             Container(
               decoration: BoxDecoration(
                 color: const Color(0xFF1B263B),
@@ -88,7 +87,6 @@ class HomePageContent extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
-                  // PARTE DE CIMA
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
@@ -106,7 +104,6 @@ class HomePageContent extends StatelessWidget {
                   ),
                   const SizedBox(height: 32),
 
-                  // PARTE DE BAIXO
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [

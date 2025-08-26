@@ -21,9 +21,15 @@ class DadosPage extends StatelessWidget {
           children: [
             Icon(icon, color: Colors.white, size: 24),
             const SizedBox(height: 8),
-            Text(title, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+            Text(
+              title,
+              style: const TextStyle(color: Colors.grey, fontSize: 12),
+            ),
             const SizedBox(height: 4),
-            Text(value, style: const TextStyle(color: Colors.white, fontSize: 16)),
+            Text(
+              value,
+              style: const TextStyle(color: Colors.white, fontSize: 16),
+            ),
           ],
         ),
       ),
@@ -43,7 +49,9 @@ class DadosPage extends StatelessWidget {
         children: [
           Icon(icon, color: Colors.white, size: 20),
           const SizedBox(width: 8),
-          Expanded(child: Text(periodo, style: const TextStyle(color: Colors.white))),
+          Expanded(
+            child: Text(periodo, style: const TextStyle(color: Colors.white)),
+          ),
           Text(porcentagem, style: const TextStyle(color: Colors.white)),
         ],
       ),
@@ -69,11 +77,18 @@ class DadosPage extends StatelessWidget {
                     icon: const Icon(Icons.arrow_back, color: Colors.white),
                     onPressed: () {
                       final homeController = Get.find<HomeViewModel>();
-                      homeController.selectedIndex.value = 0; // volta para a aba Home
+                      homeController.selectedIndex.value =
+                          0; // volta para a aba Home
                     },
                   ),
-                  const Text("Recife, PE", style: TextStyle(color: Colors.white, fontSize: 18)),
-                  IconButton(icon: const Icon(Icons.menu, color: Colors.white), onPressed: () {}),
+                  const Text(
+                    "Recife, PE",
+                    style: TextStyle(color: Colors.white, fontSize: 18),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.menu, color: Colors.white),
+                    onPressed: () => Scaffold.of(context).openDrawer(),
+                  ),
                 ],
               ),
 
@@ -91,40 +106,78 @@ class DadosPage extends StatelessWidget {
 
               const SizedBox(height: 24),
 
-              Obx(() => Row(
-                children: [
-                  _buildCard("Pressão", "${controller.pressao.value.toStringAsFixed(0)} mb", Icons.speed),
-                  const SizedBox(width: 8),
-                  _buildCard("Umidade", "${controller.umidade.value}%", Icons.water_drop),
-                ],
-              )),
+              Obx(
+                () => Row(
+                  children: [
+                    _buildCard(
+                      "Pressão",
+                      "${controller.pressao.value.toStringAsFixed(0)} mb",
+                      Icons.speed,
+                    ),
+                    const SizedBox(width: 8),
+                    _buildCard(
+                      "Umidade",
+                      "${controller.umidade.value}%",
+                      Icons.water_drop,
+                    ),
+                  ],
+                ),
+              ),
 
               const SizedBox(height: 12),
 
-              Obx(() => Row(
-                children: [
-                  _buildCard("Vento", "${controller.vento.value.toStringAsFixed(1)} m/s", Icons.air),
-                  const SizedBox(width: 8),
-                  _buildCard("Índice UV", controller.indiceUV.value, Icons.wb_sunny),
-                ],
-              )),
+              Obx(
+                () => Row(
+                  children: [
+                    _buildCard(
+                      "Vento",
+                      "${controller.vento.value.toStringAsFixed(1)} m/s",
+                      Icons.air,
+                    ),
+                    const SizedBox(width: 8),
+                    _buildCard(
+                      "Índice UV",
+                      controller.indiceUV.value,
+                      Icons.wb_sunny,
+                    ),
+                  ],
+                ),
+              ),
 
               const SizedBox(height: 32),
 
               const Text(
                 "Precipitação",
-                style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
 
               const SizedBox(height: 16),
 
-              Obx(() => Column(
-                children: [
-                  _buildPrecipitacao("Manhã", "${controller.precipitacaoManha.value}%", Icons.wb_sunny),
-                  _buildPrecipitacao("Tarde", "${controller.precipitacaoTarde.value}%", Icons.cloud),
-                  _buildPrecipitacao("Noite", "${controller.precipitacaoNoite.value}%", Icons.nights_stay),
-                ],
-              )),
+              Obx(
+                () => Column(
+                  children: [
+                    _buildPrecipitacao(
+                      "Manhã",
+                      "${controller.precipitacaoManha.value}%",
+                      Icons.wb_sunny,
+                    ),
+                    _buildPrecipitacao(
+                      "Tarde",
+                      "${controller.precipitacaoTarde.value}%",
+                      Icons.cloud,
+                    ),
+                    _buildPrecipitacao(
+                      "Noite",
+                      "${controller.precipitacaoNoite.value}%",
+                      Icons.nights_stay,
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),

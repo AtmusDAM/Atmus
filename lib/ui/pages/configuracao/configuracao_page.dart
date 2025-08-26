@@ -56,7 +56,7 @@ class ConfiguracaoPage extends StatelessWidget {
                   ),
                   IconButton(
                     icon: const Icon(Icons.menu, color: Colors.white),
-                    onPressed: () {},
+                    onPressed: () => Scaffold.of(context).openDrawer(),
                   ),
                 ],
               ),

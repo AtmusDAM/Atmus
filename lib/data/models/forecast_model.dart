@@ -3,7 +3,7 @@ class ForecastItem {
   final double temp;
   final String description;
   final String icon;
-  final double pop; // Probability of precipitation
+  final double pop; // Probabilidade de preciptação
 
   ForecastItem({
     required this.dateTime,
