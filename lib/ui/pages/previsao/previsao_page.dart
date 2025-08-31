@@ -1,4 +1,5 @@
 import 'package:atmus/viewmodels/home/home_viewmodel.dart';
+import 'package:atmus/viewmodels/locais/locais_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:atmus/viewmodels/previsao/previsao_viewmodel.dart';
@@ -108,11 +109,27 @@ class PrevisaoPage extends StatelessWidget {
                       homeController.selectedIndex.value = 0;
                     },
                   ),
-                  const Flexible(
-                    child: Text(
-                      "Recife, PE",
-                      style: TextStyle(color: Colors.white, fontSize: 18),
-                      overflow: TextOverflow.ellipsis,
+                  Expanded(
+                    child: Center(
+                      child: Obx(() {
+                        final cidade = controller.locaisController.selectedCity.value;
+                        final nomeCidade =
+                        cidade != null ? "${cidade.name}, PE" : "Carregando...";
+                        return Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.location_on, color: Colors.white),
+                            const SizedBox(width: 4),
+                            Flexible(
+                              child: Text(
+                                nomeCidade,
+                                style: const TextStyle(color: Colors.white, fontSize: 18),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        );
+                      }),
                     ),
                   ),
                   IconButton(

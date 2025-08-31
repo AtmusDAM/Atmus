@@ -1,4 +1,5 @@
 import 'package:atmus/ui/pages/configuracao/configuracao_page.dart';
+import 'package:atmus/ui/pages/mapa/mapa_page.dart';
 import 'package:atmus/ui/pages/previsao/previsao_page.dart';
 import 'package:atmus/ui/pages/locais/locais_page.dart';
 import 'package:flutter/material.dart';
@@ -15,7 +16,7 @@ class HomePage extends StatelessWidget {
     HomePageContent(),
     PrevisaoPage(),
     DadosPage(),
-    ConfiguracaoPage(),
+    MapaPage(),
   ];
 
   @override

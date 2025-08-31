@@ -2,14 +2,17 @@ import 'package:get/get.dart';
 import '../../data/repositories/weather_repository.dart';
 import '../../data/models/weather_model.dart';
 import '../../data/models/forecast_model.dart';
+import '../locais/locais_viewmodel.dart';
 
 class DadosViewModel extends GetxController {
   final WeatherRepository _repository = WeatherRepository();
 
+  final LocaisViewModel locaisController = Get.find<LocaisViewModel>();
+
   var pressao = 0.0.obs;
   var umidade = 0.obs;
   var vento = 0.0.obs;
-  var indiceUV = "N/D".obs; // UV index is not in the current API response
+  var indiceUV = "N/D".obs;
 
   var precipitacaoManha = 0.obs;
   var precipitacaoTarde = 0.obs;
@@ -18,18 +21,24 @@ class DadosViewModel extends GetxController {
   @override
   void onInit() {
     super.onInit();
+
+    ever(locaisController.selectedCity, (_) => fetchWeatherData());
+
     fetchWeatherData();
   }
 
   Future<void> fetchWeatherData() async {
-    final Weather? weather = await _repository.getCurrentWeather("Recife,BR");
+    final cidade = locaisController.selectedCity.value;
+    if (cidade == null) return;
+
+    final Weather? weather = await _repository.getCurrentWeather(cidade.name);
     if (weather != null) {
       pressao.value = weather.pressure.toDouble();
       umidade.value = weather.humidity;
       vento.value = weather.windSpeed;
     }
 
-    final Forecast? forecast = await _repository.getWeatherForecast("Recife,BR");
+    final Forecast? forecast = await _repository.getWeatherForecast(cidade.name);
     if (forecast != null) {
       _calculatePrecipitation(forecast.items);
     }
@@ -51,7 +60,7 @@ class DadosViewModel extends GetxController {
       } else if (hour >= 12 && hour < 18) {
         tardeSum += item.pop;
         tardeCount++;
-      } else if (hour >= 18 || hour < 6) { // Night can span across midnight
+      } else if (hour >= 18 || hour < 6) {
         noiteSum += item.pop;
         noiteCount++;
       }

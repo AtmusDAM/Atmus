@@ -1,9 +1,13 @@
+import 'package:atmus/data/models/city_model.dart';
 import 'package:get/get.dart';
 import '../../data/repositories/weather_repository.dart';
 import '../../data/models/weather_model.dart';
+import '../locais/locais_viewmodel.dart';
 
 class HomeViewModel extends GetxController {
   final WeatherRepository _repository = WeatherRepository();
+
+  final LocaisViewModel locaisController = Get.find<LocaisViewModel>();
 
   var selectedIndex = 0.obs;
 
@@ -18,11 +22,17 @@ class HomeViewModel extends GetxController {
   @override
   void onInit() {
     super.onInit();
+
+    ever(locaisController.selectedCity, (_) => getWeather());
+
     getWeather();
   }
 
   Future<void> getWeather() async {
-    final Weather? weather = await _repository.getCurrentWeather('Recife,BR');
+    final CityModel? cidade = locaisController.selectedCity.value;
+    if (cidade == null) return;
+
+    final Weather? weather = await _repository.getCurrentWeather(cidade.name);
 
     if (weather != null) {
       temperaturaAtual.value = weather.temp;

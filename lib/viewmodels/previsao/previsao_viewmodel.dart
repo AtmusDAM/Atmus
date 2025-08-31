@@ -2,9 +2,12 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '../../data/models/forecast_model.dart';
 import '../../data/repositories/weather_repository.dart';
+import '../locais/locais_viewmodel.dart';
 
 class PrevisaoViewModel extends GetxController {
   final WeatherRepository _repository = WeatherRepository();
+
+  final LocaisViewModel locaisController = Get.find<LocaisViewModel>();
 
   var temperaturas = <String, List<int>>{}.obs;
   var temperaturasHora = <String, int>{}.obs;
@@ -14,7 +17,14 @@ class PrevisaoViewModel extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    fetchWeatherData("Recife");
+
+    ever(locaisController.selectedCity, (_) {
+      final cidade = locaisController.selectedCity.value;
+      if (cidade != null) fetchWeatherData(cidade.name);
+    });
+
+    final cidade = locaisController.selectedCity.value;
+    if (cidade != null) fetchWeatherData(cidade.name);
   }
 
   Future<void> fetchWeatherData(String city) async {
@@ -32,9 +42,7 @@ class PrevisaoViewModel extends GetxController {
     final Map<String, List<double>> tempsByDay = {};
     for (var item in items) {
       final dayKey = DateFormat('yyyy-MM-dd').format(item.dateTime);
-      if (!tempsByDay.containsKey(dayKey)) {
-        tempsByDay[dayKey] = [];
-      }
+      tempsByDay.putIfAbsent(dayKey, () => []);
       tempsByDay[dayKey]!.add(item.temp);
     }
 
@@ -73,12 +81,14 @@ class PrevisaoViewModel extends GetxController {
     final today = DateTime.now();
     final tomorrow = today.add(const Duration(days: 1));
 
-    if (date.year == today.year && date.month == today.month && date.day == today.day) {
-      return "Hoje";
-    }
-    if (date.year == tomorrow.year && date.month == tomorrow.month && date.day == tomorrow.day) {
-      return "Amanhã";
-    }
+    if (date.year == today.year &&
+        date.month == today.month &&
+        date.day == today.day) return "Hoje";
+
+    if (date.year == tomorrow.year &&
+        date.month == tomorrow.month &&
+        date.day == tomorrow.day) return "Amanhã";
+
     return DateFormat('EEEE', 'pt_BR').format(date);
   }
 }

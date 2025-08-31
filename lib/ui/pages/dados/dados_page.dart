@@ -69,7 +69,6 @@ class DadosPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Cabeçalho
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -77,13 +76,30 @@ class DadosPage extends StatelessWidget {
                     icon: const Icon(Icons.arrow_back, color: Colors.white),
                     onPressed: () {
                       final homeController = Get.find<HomeViewModel>();
-                      homeController.selectedIndex.value =
-                          0; // volta para a aba Home
+                      homeController.selectedIndex.value = 0;
                     },
                   ),
-                  const Text(
-                    "Recife, PE",
-                    style: TextStyle(color: Colors.white, fontSize: 18),
+                  Expanded(
+                    child: Center(
+                      child: Obx(() {
+                        final cidade = controller.locaisController.selectedCity.value;
+                        final nomeCidade = cidade != null ? "${cidade.name}, PE" : "Carregando...";
+                        return Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.location_on, color: Colors.white),
+                            const SizedBox(width: 4),
+                            Flexible(
+                              child: Text(
+                                nomeCidade,
+                                style: const TextStyle(color: Colors.white, fontSize: 18),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        );
+                      }),
+                    ),
                   ),
                   IconButton(
                     icon: const Icon(Icons.menu, color: Colors.white),
@@ -107,7 +123,7 @@ class DadosPage extends StatelessWidget {
               const SizedBox(height: 24),
 
               Obx(
-                () => Row(
+                    () => Row(
                   children: [
                     _buildCard(
                       "Pressão",
@@ -127,7 +143,7 @@ class DadosPage extends StatelessWidget {
               const SizedBox(height: 12),
 
               Obx(
-                () => Row(
+                    () => Row(
                   children: [
                     _buildCard(
                       "Vento",
@@ -158,7 +174,7 @@ class DadosPage extends StatelessWidget {
               const SizedBox(height: 16),
 
               Obx(
-                () => Column(
+                    () => Column(
                   children: [
                     _buildPrecipitacao(
                       "Manhã",

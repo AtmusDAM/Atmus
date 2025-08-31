@@ -1,6 +1,11 @@
-class City {
+class CityModel {
   final String name;
-  final String temperature;
+  final int minTemp;
+  final int maxTemp;
 
-  City({required this.name, required this.temperature});
+  CityModel({
+    required this.name,
+    required this.minTemp,
+    required this.maxTemp,
+  });
 }

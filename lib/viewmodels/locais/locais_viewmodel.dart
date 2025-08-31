@@ -1,25 +1,38 @@
 import 'package:get/get.dart';
-import '../../../data/models/city_model.dart';
+import 'package:atmus/data/models/city_model.dart';
 
 class LocaisViewModel extends GetxController {
-  var currentCity = City(name: "Recife\nPernambuco", temperature: "22°").obs;
-
-  var favoriteCities = <City>[
-    City(name: "Recife", temperature: "19° 22°"),
-    City(name: "Salvador", temperature: "28° 23°"),
-    City(name: "Fortaleza", temperature: "20° 23°"),
-    City(name: "Crato", temperature: "28° 23°"),
-    City(name: "Garanhuns", temperature: "28° 23°"),
-    City(name: "Carpina", temperature: "28° 23°"),
+  var allCities = <CityModel>[
+    CityModel(name: "Recife", minTemp: 18, maxTemp: 23),
+    CityModel(name: "Salvador", minTemp: 23, maxTemp: 26),
+    CityModel(name: "Fortaleza", minTemp: 23, maxTemp: 20),
+    CityModel(name: "Crato", minTemp: 23, maxTemp: 26),
+    CityModel(name: "Garanhuns", minTemp: 23, maxTemp: 26),
+    CityModel(name: "Carpina", minTemp: 23, maxTemp: 26),
   ].obs;
 
-  void addFavorite(City city) {
-    if (!favoriteCities.contains(city)) {
-      favoriteCities.add(city);
+  var filteredCities = <CityModel>[].obs;
+
+  var selectedCity = Rxn<CityModel>();
+
+  @override
+  void onInit() {
+    super.onInit();
+    filteredCities.assignAll(allCities);
+  }
+
+  void filterCities(String query) {
+    if (query.isEmpty) {
+      filteredCities.assignAll(allCities);
+    } else {
+      filteredCities.assignAll(
+        allCities.where((city) =>
+            city.name.toLowerCase().contains(query.toLowerCase())),
+      );
     }
   }
 
-  void removeFavorite(City city) {
-    favoriteCities.remove(city);
+  void selectCity(CityModel city) {
+    selectedCity.value = city;
   }
 }

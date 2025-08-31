@@ -42,14 +42,18 @@ class HomePageContent extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: const [
-                          Icon(Icons.location_on, color: Colors.white),
-                          SizedBox(width: 4),
-                          Text("Recife, PE", style: TextStyle(color: Colors.white)),
-                        ],
-                      ),
+                      Obx(() {
+                        final cidade = controller.locaisController.selectedCity.value;
+                        final nomeCidade = cidade != null ? "${cidade.name}, PE" : "Carregando...";
+                        return Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.location_on, color: Colors.white),
+                            const SizedBox(width: 4),
+                            Text(nomeCidade, style: const TextStyle(color: Colors.white)),
+                          ],
+                        );
+                      }),
                       const SizedBox(height: 8),
                       Obx(() => Text(
                         "${controller.temperaturaAtual.value.toStringAsFixed(0)} ºC",
