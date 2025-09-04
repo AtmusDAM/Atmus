@@ -9,14 +9,19 @@ class HomePageContent extends StatelessWidget {
 
   final controller = Get.find<HomeViewModel>();
 
-  Widget _getWeatherIcon(String iconCode) {
-    if (iconCode.isEmpty) {
+  /// Aceita código (ex.: "10d") ou URL completa
+  Widget _getWeatherIcon(String icon) {
+    if (icon.isEmpty) {
       return const Icon(Icons.cloud, color: Colors.white, size: 48);
     }
+    final isUrl = icon.startsWith('http');
+    final url = isUrl ? icon : 'https://openweathermap.org/img/wn/$icon@2x.png';
     return Image.network(
-      'http://openweathermap.org/img/wn/$iconCode@2x.png',
+      url,
       width: 50,
       height: 50,
+      errorBuilder: (_, __, ___) =>
+      const Icon(Icons.cloud, color: Colors.white, size: 48),
     );
   }
 
@@ -43,28 +48,55 @@ class HomePageContent extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Obx(() {
-                        final cidade = controller.locaisController.selectedCity.value;
-                        final nomeCidade = cidade != null ? "${cidade.name}, PE" : "Carregando...";
+                        // PRIORIDADE: cidade do GPS; se vazia, usa cidade da gaveta
+                        String nomeCidade = controller.gpsCity.value.trim();
+                        if (nomeCidade.isEmpty) {
+                          final cidade = controller.locaisController.selectedCity.value;
+                          nomeCidade =
+                          cidade != null ? "${cidade.name}, PE" : "Carregando...";
+                        }
+
                         return Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             const Icon(Icons.location_on, color: Colors.white),
                             const SizedBox(width: 4),
-                            Text(nomeCidade, style: const TextStyle(color: Colors.white)),
+                            Flexible(
+                              child: Text(
+                                nomeCidade,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(color: Colors.white),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
                           ],
                         );
                       }),
                       const SizedBox(height: 8),
-                      Obx(() => Text(
-                        "${controller.temperaturaAtual.value.toStringAsFixed(0)} ºC",
-                        style: const TextStyle(
-                            fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white),
-                      )),
+                      Obx(
+                            () => FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            "${controller.temperaturaAtual.value.toStringAsFixed(0)} ºC",
+                            style: const TextStyle(
+                              fontSize: 32,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
                       const SizedBox(height: 4),
-                      Obx(() => Text(
-                        controller.descricaoTempo.value,
-                        style: TextStyle(color: Colors.grey[300]),
-                      )),
+                      Obx(
+                            () => Text(
+                          controller.descricaoTempo.value,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(color: Colors.grey[300]),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -114,19 +146,27 @@ class HomePageContent extends StatelessWidget {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text("Máxima", style: TextStyle(color: Colors.grey, fontSize: 12)),
+                          const Text("Máxima",
+                              style: TextStyle(color: Colors.grey, fontSize: 12)),
                           const SizedBox(height: 4),
-                          Obx(() => Text("${controller.temperaturaMax.value.toStringAsFixed(1)} ºC",
-                              style: const TextStyle(color: Colors.white, fontSize: 16))),
+                          Obx(() => Text(
+                            "${controller.temperaturaMax.value.toStringAsFixed(1)} ºC",
+                            style:
+                            const TextStyle(color: Colors.white, fontSize: 16),
+                          )),
                         ],
                       ),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text("Mínima", style: TextStyle(color: Colors.grey, fontSize: 12)),
+                          const Text("Mínima",
+                              style: TextStyle(color: Colors.grey, fontSize: 12)),
                           const SizedBox(height: 4),
-                          Obx(() => Text("${controller.temperaturaMin.value.toStringAsFixed(1)} ºC",
-                              style: const TextStyle(color: Colors.white, fontSize: 16))),
+                          Obx(() => Text(
+                            "${controller.temperaturaMin.value.toStringAsFixed(1)} ºC",
+                            style:
+                            const TextStyle(color: Colors.white, fontSize: 16),
+                          )),
                         ],
                       ),
                     ],
@@ -158,8 +198,10 @@ class HomePageContent extends StatelessWidget {
                         const SizedBox(height: 8),
                         Text("Sensação",
                             style: TextStyle(color: Colors.grey[400], fontSize: 12)),
-                        Obx(() => Text("${controller.sensacaoSol.value.toStringAsFixed(1)} ºC",
-                            style: const TextStyle(color: Colors.white))),
+                        Obx(() => Text(
+                          "${controller.sensacaoSol.value.toStringAsFixed(1)} ºC",
+                          style: const TextStyle(color: Colors.white),
+                        )),
                       ],
                     ),
                   ),
@@ -182,8 +224,10 @@ class HomePageContent extends StatelessWidget {
                         const SizedBox(height: 8),
                         Text("Precipitação",
                             style: TextStyle(color: Colors.grey[400], fontSize: 12)),
-                        Obx(() => Text("${controller.sensacaoChuva.value} mm",
-                            style: const TextStyle(color: Colors.white))),
+                        Obx(() => Text(
+                          "${controller.sensacaoChuva.value.toStringAsFixed(1)} mm",
+                          style: const TextStyle(color: Colors.white),
+                        )),
                       ],
                     ),
                   ),

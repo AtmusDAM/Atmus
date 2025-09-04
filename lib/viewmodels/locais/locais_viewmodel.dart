@@ -2,32 +2,39 @@ import 'package:get/get.dart';
 import 'package:atmus/data/models/city_model.dart';
 
 class LocaisViewModel extends GetxController {
-  var allCities = <CityModel>[
-    CityModel(name: "Recife", minTemp: 18, maxTemp: 23),
-    CityModel(name: "Salvador", minTemp: 23, maxTemp: 26),
-    CityModel(name: "Fortaleza", minTemp: 23, maxTemp: 20),
-    CityModel(name: "Crato", minTemp: 23, maxTemp: 26),
-    CityModel(name: "Garanhuns", minTemp: 23, maxTemp: 26),
-    CityModel(name: "Carpina", minTemp: 23, maxTemp: 26),
+  // Lista “fonte da verdade” (pode vir de JSON depois)
+  final RxList<CityModel> _cities = <CityModel>[
+    // name, min, max, lat, lon
+    CityModel(name: 'Recife',      minTemp: 23, maxTemp: 30, lat: -8.0476, lon: -34.8770),
+    CityModel(name: 'Salvador',    minTemp: 24, maxTemp: 31, lat: -12.9777, lon: -38.5016),
+    CityModel(name: 'Fortaleza',   minTemp: 24, maxTemp: 30, lat:  -3.7319, lon: -38.5267),
+    CityModel(name: 'Crato',       minTemp: 22, maxTemp: 33, lat:  -7.2345, lon: -39.4097),
+    CityModel(name: 'Garanhuns',   minTemp: 17, maxTemp: 27, lat:  -8.8829, lon: -36.4960),
+    CityModel(name: 'Carpina',     minTemp: 23, maxTemp: 29, lat:  -7.8456, lon: -35.2549),
   ].obs;
 
-  var filteredCities = <CityModel>[].obs;
+  // Exposta para a UI (lista filtrada)
+  final RxList<CityModel> filteredCities = <CityModel>[].obs;
 
-  var selectedCity = Rxn<CityModel>();
+  // Cidade selecionada atualmente (drawer / gps pode sobrescrever via Home)
+  final Rxn<CityModel> selectedCity = Rxn<CityModel>();
 
   @override
   void onInit() {
     super.onInit();
-    filteredCities.assignAll(allCities);
+    // Inicial: lista completa
+    filteredCities.assignAll(_cities);
+    // Se quiser uma cidade padrão:
+    selectedCity.value = _cities.first;
   }
 
   void filterCities(String query) {
-    if (query.isEmpty) {
-      filteredCities.assignAll(allCities);
+    final q = query.trim().toLowerCase();
+    if (q.isEmpty) {
+      filteredCities.assignAll(_cities);
     } else {
       filteredCities.assignAll(
-        allCities.where((city) =>
-            city.name.toLowerCase().contains(query.toLowerCase())),
+        _cities.where((c) => c.name.toLowerCase().contains(q)),
       );
     }
   }
@@ -35,4 +42,7 @@ class LocaisViewModel extends GetxController {
   void selectCity(CityModel city) {
     selectedCity.value = city;
   }
+
+  // getters úteis (mantêm compatibilidade com seu código atual)
+  List<CityModel> get cities => _cities;
 }

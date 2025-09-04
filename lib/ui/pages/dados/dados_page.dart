@@ -1,11 +1,15 @@
-import 'package:atmus/viewmodels/home/home_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
+import 'package:atmus/viewmodels/home/home_viewmodel.dart';
 import 'package:atmus/viewmodels/dados/dados_viewmodel.dart';
 
 class DadosPage extends StatelessWidget {
   DadosPage({super.key});
-  final controller = Get.put(DadosViewModel());
+
+  // Use as instâncias já registradas (não crie novas aqui)
+  final DadosViewModel controller = Get.find<DadosViewModel>();
+  final HomeViewModel home = Get.find<HomeViewModel>();
 
   Widget _buildCard(String title, String value, IconData icon) {
     return Expanded(
@@ -21,15 +25,9 @@ class DadosPage extends StatelessWidget {
           children: [
             Icon(icon, color: Colors.white, size: 24),
             const SizedBox(height: 8),
-            Text(
-              title,
-              style: const TextStyle(color: Colors.grey, fontSize: 12),
-            ),
+            Text(title, style: const TextStyle(color: Colors.grey, fontSize: 12)),
             const SizedBox(height: 4),
-            Text(
-              value,
-              style: const TextStyle(color: Colors.white, fontSize: 16),
-            ),
+            Text(value, style: const TextStyle(color: Colors.white, fontSize: 16)),
           ],
         ),
       ),
@@ -49,9 +47,7 @@ class DadosPage extends StatelessWidget {
         children: [
           Icon(icon, color: Colors.white, size: 20),
           const SizedBox(width: 8),
-          Expanded(
-            child: Text(periodo, style: const TextStyle(color: Colors.white)),
-          ),
+          Expanded(child: Text(periodo, style: const TextStyle(color: Colors.white))),
           Text(porcentagem, style: const TextStyle(color: Colors.white)),
         ],
       ),
@@ -69,21 +65,23 @@ class DadosPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // HEADER
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   IconButton(
                     icon: const Icon(Icons.arrow_back, color: Colors.white),
-                    onPressed: () {
-                      final homeController = Get.find<HomeViewModel>();
-                      homeController.selectedIndex.value = 0;
-                    },
+                    onPressed: () => home.selectedIndex.value = 0,
                   ),
                   Expanded(
                     child: Center(
                       child: Obx(() {
-                        final cidade = controller.locaisController.selectedCity.value;
-                        final nomeCidade = cidade != null ? "${cidade.name}, PE" : "Carregando...";
+                        // Prioridade: cidade do GPS; se vazia, usa a escolhida
+                        String nomeCidade = home.gpsCity.value.trim();
+                        if (nomeCidade.isEmpty) {
+                          final c = controller.locaisController.selectedCity.value;
+                          nomeCidade = c != null ? "${c.name}, PE" : "Carregando...";
+                        }
                         return Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -103,7 +101,7 @@ class DadosPage extends StatelessWidget {
                   ),
                   IconButton(
                     icon: const Icon(Icons.menu, color: Colors.white),
-                    onPressed: () => Scaffold.of(context).openDrawer(),
+                    onPressed: () => Scaffold.maybeOf(context)?.openDrawer(),
                   ),
                 ],
               ),
@@ -122,12 +120,13 @@ class DadosPage extends StatelessWidget {
 
               const SizedBox(height: 24),
 
+              // Linha 1: Pressão / Umidade (INT)
               Obx(
                     () => Row(
                   children: [
                     _buildCard(
                       "Pressão",
-                      "${controller.pressao.value.toStringAsFixed(0)} mb",
+                      "${controller.pressao.value} mb",
                       Icons.speed,
                     ),
                     const SizedBox(width: 8),
@@ -142,6 +141,7 @@ class DadosPage extends StatelessWidget {
 
               const SizedBox(height: 12),
 
+              // Linha 2: Vento (DOUBLE) / UV
               Obx(
                     () => Row(
                   children: [
@@ -173,6 +173,7 @@ class DadosPage extends StatelessWidget {
 
               const SizedBox(height: 16),
 
+              // Manhã / Tarde / Noite (INT)
               Obx(
                     () => Column(
                   children: [
