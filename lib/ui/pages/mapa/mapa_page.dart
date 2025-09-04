@@ -9,7 +9,6 @@ import 'package:atmus/viewmodels/locais/locais_viewmodel.dart';
 
 class MapaPage extends StatefulWidget {
   const MapaPage({super.key});
-
   @override
   State<MapaPage> createState() => _MapaPageState();
 }
@@ -27,16 +26,16 @@ class _MapaPageState extends State<MapaPage> {
 
   late final Worker _gpsWorker;
   late final Worker _cityWorker;
+  late final Worker _gpsCoordWorker;
 
   @override
   void initState() {
     super.initState();
 
     final p = loc.position.value;
-    if (p != null) {
-      _center.value = LatLng(p.latitude, p.longitude);
-    }
+    if (p != null) _center.value = LatLng(p.latitude, p.longitude);
 
+    // 1) mudanças em posição do GPS
     _gpsWorker = ever(loc.position, (pos) {
       if (pos != null) {
         final ll = LatLng(pos.latitude, pos.longitude);
@@ -46,11 +45,22 @@ class _MapaPageState extends State<MapaPage> {
       }
     });
 
+    // 2) cidade manual com lat/lon
     _cityWorker = ever(locais.selectedCity, (city) {
       if (city != null && city.lat != null && city.lon != null) {
         final ll = LatLng(city.lat!, city.lon!);
         _center.value = ll;
         _zoom.value = 11.5;
+        _mapCtl.move(ll, _zoom.value);
+        setState(() {});
+      }
+    });
+
+    // 3) override explícito vindo do WeatherController
+    _gpsCoordWorker = ever(home.gpsCoord, (LatLng? ll) {
+      if (ll != null) {
+        _center.value = ll;
+        _zoom.value = 12.0;
         _mapCtl.move(ll, _zoom.value);
         setState(() {});
       }
@@ -61,6 +71,7 @@ class _MapaPageState extends State<MapaPage> {
   void dispose() {
     _gpsWorker.dispose();
     _cityWorker.dispose();
+    _gpsCoordWorker.dispose();
     super.dispose();
   }
 
@@ -77,7 +88,7 @@ class _MapaPageState extends State<MapaPage> {
             selected: selected,
             onSelected: (_) {
               _overlay.value = name;
-              setState(() {}); // (futuro) trocar layer
+              setState(() {});
             },
           );
         }).toList(),
@@ -103,29 +114,23 @@ class _MapaPageState extends State<MapaPage> {
                 ),
                 Expanded(
                   child: Center(
-                    child: Obx(() {
-                      String nomeCidade = home.gpsCity.value.trim();
-                      if (nomeCidade.isEmpty) {
-                        final c = locais.selectedCity.value;
-                        nomeCidade =
-                        c != null ? "${c.name}, PE" : "Carregando...";
-                      }
-                      return Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.location_on, color: Colors.white),
-                          const SizedBox(width: 4),
-                          Flexible(
-                            child: Text(
-                              nomeCidade,
-                              style: const TextStyle(
-                                  color: Colors.white, fontSize: 18),
-                              overflow: TextOverflow.ellipsis,
-                            ),
+                    child: Obx(() => Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.location_on, color: Colors.white),
+                        const SizedBox(width: 4),
+                        Flexible(
+                          child: Text(
+                            home.cityName.value.isEmpty
+                                ? 'Carregando...'
+                                : home.cityName.value,
+                            style: const TextStyle(
+                                color: Colors.white, fontSize: 18),
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        ],
-                      );
-                    }),
+                        ),
+                      ],
+                    )),
                   ),
                 ),
                 IconButton(
@@ -151,7 +156,6 @@ class _MapaPageState extends State<MapaPage> {
                       minZoom: 3,
                     ),
                     children: [
-                      // <<< tire o `const` aqui
                       TileLayer(
                         urlTemplate:
                         'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -179,14 +183,14 @@ class _MapaPageState extends State<MapaPage> {
 
             const SizedBox(height: 12),
 
+            // Overlays
             Container(
               decoration: BoxDecoration(
                 color: const Color(0xFF1B263B),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: Colors.grey.shade800),
               ),
-              padding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: _overlayChips(),
             ),
           ],

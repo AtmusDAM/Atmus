@@ -7,7 +7,6 @@ import 'package:atmus/viewmodels/dados/dados_viewmodel.dart';
 class DadosPage extends StatelessWidget {
   DadosPage({super.key});
 
-  // Use as instâncias já registradas (não crie novas aqui)
   final DadosViewModel controller = Get.find<DadosViewModel>();
   final HomeViewModel home = Get.find<HomeViewModel>();
 
@@ -56,147 +55,137 @@ class DadosPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF0D1B2A),
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // HEADER
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.arrow_back, color: Colors.white),
+                  onPressed: () => home.selectedIndex.value = 0,
+                ),
+                Expanded(
+                  child: Center(
+                    child: Obx(() => Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.location_on, color: Colors.white),
+                        const SizedBox(width: 4),
+                        Flexible(
+                          child: Text(
+                            home.cityName.value.isEmpty
+                                ? 'Carregando...'
+                                : home.cityName.value,
+                            style: const TextStyle(
+                                color: Colors.white, fontSize: 18),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    )),
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.menu, color: Colors.white),
+                  onPressed: () => Scaffold.maybeOf(context)?.openDrawer(),
+                ),
+              ],
+            ),
 
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // HEADER
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            const SizedBox(height: 24),
+
+            const Text(
+              "Dados+",
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.2,
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // Linha 1: Pressão / Umidade
+            Obx(
+                  () => Row(
                 children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Colors.white),
-                    onPressed: () => home.selectedIndex.value = 0,
+                  _buildCard(
+                    "Pressão",
+                    "${controller.pressao.value} mb",
+                    Icons.speed,
                   ),
-                  Expanded(
-                    child: Center(
-                      child: Obx(() {
-                        // Prioridade: cidade do GPS; se vazia, usa a escolhida
-                        String nomeCidade = home.gpsCity.value.trim();
-                        if (nomeCidade.isEmpty) {
-                          final c = controller.locaisController.selectedCity.value;
-                          nomeCidade = c != null ? "${c.name}, PE" : "Carregando...";
-                        }
-                        return Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.location_on, color: Colors.white),
-                            const SizedBox(width: 4),
-                            Flexible(
-                              child: Text(
-                                nomeCidade,
-                                style: const TextStyle(color: Colors.white, fontSize: 18),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        );
-                      }),
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.menu, color: Colors.white),
-                    onPressed: () => Scaffold.maybeOf(context)?.openDrawer(),
+                  const SizedBox(width: 8),
+                  _buildCard(
+                    "Umidade",
+                    "${controller.umidade.value}%",
+                    Icons.water_drop,
                   ),
                 ],
               ),
+            ),
 
-              const SizedBox(height: 24),
+            const SizedBox(height: 12),
 
-              const Text(
-                "Dados+",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.2,
-                ),
+            // Linha 2: Vento / UV
+            Obx(
+                  () => Row(
+                children: [
+                  _buildCard(
+                    "Vento",
+                    "${controller.vento.value.toStringAsFixed(1)} m/s",
+                    Icons.air,
+                  ),
+                  const SizedBox(width: 8),
+                  _buildCard(
+                    "Índice UV",
+                    controller.indiceUV.value,
+                    Icons.wb_sunny,
+                  ),
+                ],
               ),
+            ),
 
-              const SizedBox(height: 24),
+            const SizedBox(height: 32),
 
-              // Linha 1: Pressão / Umidade (INT)
-              Obx(
-                    () => Row(
-                  children: [
-                    _buildCard(
-                      "Pressão",
-                      "${controller.pressao.value} mb",
-                      Icons.speed,
-                    ),
-                    const SizedBox(width: 8),
-                    _buildCard(
-                      "Umidade",
-                      "${controller.umidade.value}%",
-                      Icons.water_drop,
-                    ),
-                  ],
-                ),
+            const Text(
+              "Precipitação",
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
               ),
+            ),
 
-              const SizedBox(height: 12),
+            const SizedBox(height: 16),
 
-              // Linha 2: Vento (DOUBLE) / UV
-              Obx(
-                    () => Row(
-                  children: [
-                    _buildCard(
-                      "Vento",
-                      "${controller.vento.value.toStringAsFixed(1)} m/s",
-                      Icons.air,
-                    ),
-                    const SizedBox(width: 8),
-                    _buildCard(
-                      "Índice UV",
-                      controller.indiceUV.value,
-                      Icons.wb_sunny,
-                    ),
-                  ],
-                ),
+            Obx(
+                  () => Column(
+                children: [
+                  _buildPrecipitacao(
+                    "Manhã",
+                    "${controller.precipitacaoManha.value}%",
+                    Icons.wb_sunny,
+                  ),
+                  _buildPrecipitacao(
+                    "Tarde",
+                    "${controller.precipitacaoTarde.value}%",
+                    Icons.cloud,
+                  ),
+                  _buildPrecipitacao(
+                    "Noite",
+                    "${controller.precipitacaoNoite.value}%",
+                    Icons.nights_stay,
+                  ),
+                ],
               ),
-
-              const SizedBox(height: 32),
-
-              const Text(
-                "Precipitação",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              // Manhã / Tarde / Noite (INT)
-              Obx(
-                    () => Column(
-                  children: [
-                    _buildPrecipitacao(
-                      "Manhã",
-                      "${controller.precipitacaoManha.value}%",
-                      Icons.wb_sunny,
-                    ),
-                    _buildPrecipitacao(
-                      "Tarde",
-                      "${controller.precipitacaoTarde.value}%",
-                      Icons.cloud,
-                    ),
-                    _buildPrecipitacao(
-                      "Noite",
-                      "${controller.precipitacaoNoite.value}%",
-                      Icons.nights_stay,
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

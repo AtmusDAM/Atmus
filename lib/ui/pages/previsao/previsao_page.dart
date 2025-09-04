@@ -78,15 +78,13 @@ class PrevisaoPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Use instâncias já registradas
     final home = Get.find<HomeViewModel>();
     final controller = Get.put(PrevisaoViewModel(), permanent: false);
 
-    // Sem Scaffold aqui — usamos o Scaffold da HomePage
     return SafeArea(
       child: Column(
         children: [
-          // HEADER
+          // HEADER (abre a gaveta da Home)
           Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
@@ -98,37 +96,28 @@ class PrevisaoPage extends StatelessWidget {
                 ),
                 Expanded(
                   child: Center(
-                    child: Obx(() {
-                      // Prioridade: cidade do GPS; senão, cidade da gaveta
-                      String nomeCidade = home.gpsCity.value.trim();
-                      if (nomeCidade.isEmpty) {
-                        final c = controller.locaisController.selectedCity.value;
-                        nomeCidade = c != null ? "${c.name}, PE" : "Carregando...";
-                      }
-                      return Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.location_on, color: Colors.white),
-                          const SizedBox(width: 4),
-                          Flexible(
-                            child: Text(
-                              nomeCidade,
-                              style: const TextStyle(
-                                  color: Colors.white, fontSize: 18),
-                              overflow: TextOverflow.ellipsis,
-                            ),
+                    child: Obx(() => Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.location_on, color: Colors.white),
+                        const SizedBox(width: 4),
+                        Flexible(
+                          child: Text(
+                            home.cityName.value.isEmpty
+                                ? 'Carregando...'
+                                : home.cityName.value,
+                            style: const TextStyle(
+                                color: Colors.white, fontSize: 18),
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        ],
-                      );
-                    }),
+                        ),
+                      ],
+                    )),
                   ),
                 ),
-                // Agora abre o drawer da Home (aba padrão, sem modal)
                 IconButton(
                   icon: const Icon(Icons.menu, color: Colors.white),
-                  onPressed: () {
-                    Scaffold.maybeOf(context)?.openDrawer();
-                  },
+                  onPressed: () => Scaffold.maybeOf(context)?.openDrawer(),
                 ),
               ],
             ),
@@ -152,7 +141,7 @@ class PrevisaoPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
 
-                  // Card 1: resumo + hora a hora (próximas 24h)
+                  // Card 1: resumo + hora a hora
                   _card(
                     child: Obx(() {
                       if (controller.isLoading.value) {

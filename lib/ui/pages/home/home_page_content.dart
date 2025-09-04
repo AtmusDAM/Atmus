@@ -7,7 +7,7 @@ import 'package:atmus/viewmodels/home/home_viewmodel.dart';
 class HomePageContent extends StatelessWidget {
   HomePageContent({super.key});
 
-  final controller = Get.find<HomeViewModel>();
+  final HomeViewModel controller = Get.find<HomeViewModel>();
 
   /// Aceita código (ex.: "10d") ou URL completa
   Widget _getWeatherIcon(String icon) {
@@ -47,15 +47,9 @@ class HomePageContent extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
+                      // >>> usa o cityName unificado do HomeViewModel
                       Obx(() {
-                        // PRIORIDADE: cidade do GPS; se vazia, usa cidade da gaveta
-                        String nomeCidade = controller.gpsCity.value.trim();
-                        if (nomeCidade.isEmpty) {
-                          final cidade = controller.locaisController.selectedCity.value;
-                          nomeCidade =
-                          cidade != null ? "${cidade.name}, PE" : "Carregando...";
-                        }
-
+                        final nomeCidade = controller.cityName.value;
                         return Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -63,7 +57,7 @@ class HomePageContent extends StatelessWidget {
                             const SizedBox(width: 4),
                             Flexible(
                               child: Text(
-                                nomeCidade,
+                                nomeCidade.isEmpty ? 'Carregando...' : nomeCidade,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(color: Colors.white),
@@ -103,6 +97,7 @@ class HomePageContent extends StatelessWidget {
                 IconButton(
                   icon: const Icon(Icons.menu, color: Colors.white),
                   onPressed: () {
+                    // abre a gaveta da Home
                     Scaffold.of(context).openDrawer();
                   },
                 ),
@@ -131,8 +126,10 @@ class HomePageContent extends StatelessWidget {
                         children: const [
                           Text("Agora", style: TextStyle(color: Colors.white)),
                           SizedBox(height: 4),
-                          Text("Atualizado há 5min",
-                              style: TextStyle(color: Colors.grey, fontSize: 12)),
+                          Text(
+                            "Atualizado há 5min",
+                            style: TextStyle(color: Colors.grey, fontSize: 12),
+                          ),
                         ],
                       ),
                       Obx(() => _getWeatherIcon(controller.weatherIcon.value)),
@@ -146,26 +143,30 @@ class HomePageContent extends StatelessWidget {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text("Máxima",
-                              style: TextStyle(color: Colors.grey, fontSize: 12)),
+                          const Text(
+                            "Máxima",
+                            style: TextStyle(color: Colors.grey, fontSize: 12),
+                          ),
                           const SizedBox(height: 4),
                           Obx(() => Text(
                             "${controller.temperaturaMax.value.toStringAsFixed(1)} ºC",
-                            style:
-                            const TextStyle(color: Colors.white, fontSize: 16),
+                            style: const TextStyle(
+                                color: Colors.white, fontSize: 16),
                           )),
                         ],
                       ),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text("Mínima",
-                              style: TextStyle(color: Colors.grey, fontSize: 12)),
+                          const Text(
+                            "Mínima",
+                            style: TextStyle(color: Colors.grey, fontSize: 12),
+                          ),
                           const SizedBox(height: 4),
                           Obx(() => Text(
                             "${controller.temperaturaMin.value.toStringAsFixed(1)} ºC",
-                            style:
-                            const TextStyle(color: Colors.white, fontSize: 16),
+                            style: const TextStyle(
+                                color: Colors.white, fontSize: 16),
                           )),
                         ],
                       ),
@@ -197,7 +198,8 @@ class HomePageContent extends StatelessWidget {
                         const Icon(Icons.wb_sunny, color: Colors.white),
                         const SizedBox(height: 8),
                         Text("Sensação",
-                            style: TextStyle(color: Colors.grey[400], fontSize: 12)),
+                            style:
+                            TextStyle(color: Colors.grey[400], fontSize: 12)),
                         Obx(() => Text(
                           "${controller.sensacaoSol.value.toStringAsFixed(1)} ºC",
                           style: const TextStyle(color: Colors.white),
@@ -223,7 +225,8 @@ class HomePageContent extends StatelessWidget {
                         const Icon(Icons.water_drop, color: Colors.white),
                         const SizedBox(height: 8),
                         Text("Precipitação",
-                            style: TextStyle(color: Colors.grey[400], fontSize: 12)),
+                            style:
+                            TextStyle(color: Colors.grey[400], fontSize: 12)),
                         Obx(() => Text(
                           "${controller.sensacaoChuva.value.toStringAsFixed(1)} mm",
                           style: const TextStyle(color: Colors.white),
@@ -242,7 +245,7 @@ class HomePageContent extends StatelessWidget {
               width: double.infinity,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(16),
-                child: MiniMapaWidget(),
+                child: MiniMapaWidget(), // este widget já escuta HomeViewModel
               ),
             ),
           ],

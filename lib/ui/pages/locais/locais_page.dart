@@ -4,8 +4,11 @@ import 'package:get/get.dart';
 import 'package:atmus/viewmodels/locais/locais_viewmodel.dart';
 import 'package:atmus/data/models/city_model.dart';
 
-// Para chamar o GPS via WeatherController
+// Chama GPS via WeatherController
 import 'package:atmus/presentation/controllers/weather_controller.dart';
+
+// <<< NOVO: precisamos do HomeViewModel para limpar override do GPS
+import 'package:atmus/viewmodels/home/home_viewmodel.dart';
 
 class LocaisPage extends StatelessWidget {
   LocaisPage({super.key});
@@ -93,7 +96,7 @@ class LocaisPage extends StatelessWidget {
                 ),
               ),
 
-              // ===== BOTÃO "USAR MINHA LOCALIZAÇÃO" (NOVO) =====
+              // ===== BOTÃO "USAR MINHA LOCALIZAÇÃO" =====
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
                 child: Material(
@@ -104,7 +107,7 @@ class LocaisPage extends StatelessWidget {
                     onTap: () async {
                       final weatherCtl = Get.find<WeatherController>();
 
-                      // Fecha o drawer para mostrar feedback por trás
+                      // Fecha o drawer antes do processo (feedback aparece por trás)
                       if (Scaffold.maybeOf(context)?.isDrawerOpen ?? false) {
                         Navigator.of(context).pop();
                       } else {
@@ -118,11 +121,13 @@ class LocaisPage extends StatelessWidget {
                         Get.snackbar('Localização', err,
                             snackPosition: SnackPosition.BOTTOM);
                       } else {
-                        Get.snackbar('Localização',
-                            'Cidade detectada e clima atualizado.',
-                            snackPosition: SnackPosition.BOTTOM);
-                        // Se quiser trocar para a aba "Previsão", descomente:
-                        // Get.find<HomeViewModel>().selectedIndex.value = 1;
+                        Get.snackbar(
+                          'Localização',
+                          'Cidade detectada e clima atualizado.',
+                          snackPosition: SnackPosition.BOTTOM,
+                        );
+                        // Se quiser navegar para outra aba, faça aqui.
+                        // Get.find<HomeViewModel>().selectedIndex.value = 0;
                       }
                     },
                     child: const ListTile(
@@ -137,7 +142,7 @@ class LocaisPage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              // ===== FIM DO BOTÃO NOVO =====
+              // ===== FIM DO BOTÃO =====
 
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20),
@@ -176,7 +181,19 @@ class LocaisPage extends StatelessWidget {
                           final isSelected =
                               controller.selectedCity.value?.name == city.name;
                           return GestureDetector(
-                            onTap: () => controller.selectCity(city),
+                            onTap: () {
+                              // <<< NOVO: ao escolher manualmente, a cidade manual tem prioridade
+                              final home = Get.find<HomeViewModel>();
+                              home.clearGpsOverride();              // 1) limpa GPS
+                              controller.selectCity(city);          // 2) seleciona cidade
+                              Navigator.of(context).pop();          // 3) fecha gaveta
+
+                              // (HomeViewModel escuta selectedCity e dispara:
+                              //  - cityName para todas as telas,
+                              //  - refresh do clima atual,
+                              //  - cityChanged para Previsão/Dados+,
+                              //  - recentra mapas se CityModel tiver lat/lon.)
+                            },
                             child: Container(
                               margin: const EdgeInsets.only(bottom: 8),
                               padding: const EdgeInsets.symmetric(
