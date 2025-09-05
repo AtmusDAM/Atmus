@@ -1,12 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
 import 'package:atmus/viewmodels/locais/locais_viewmodel.dart';
 import 'package:atmus/data/models/city_model.dart';
+
+// Chama GPS via WeatherController
+import 'package:atmus/presentation/controllers/weather_controller.dart';
+
+// <<< NOVO: precisamos do HomeViewModel para limpar override do GPS
+import 'package:atmus/viewmodels/home/home_viewmodel.dart';
 
 class LocaisPage extends StatelessWidget {
   LocaisPage({super.key});
 
-  final LocaisViewModel controller = Get.put(LocaisViewModel());
+  // Use a instância já registrada no main.dart (evita duplicar controller)
+  final LocaisViewModel controller = Get.find<LocaisViewModel>();
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +37,7 @@ class LocaisPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Título + fechar
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: Row(
@@ -52,6 +61,7 @@ class LocaisPage extends StatelessWidget {
                 ),
               ),
 
+              // Busca
               Container(
                 margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -86,7 +96,53 @@ class LocaisPage extends StatelessWidget {
                 ),
               ),
 
+              // ===== BOTÃO "USAR MINHA LOCALIZAÇÃO" =====
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                child: Material(
+                  color: const Color(0xFF1B263B),
+                  borderRadius: BorderRadius.circular(12),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(12),
+                    onTap: () async {
+                      final weatherCtl = Get.find<WeatherController>();
+
+                      // Fecha o drawer antes do processo (feedback aparece por trás)
+                      if (Scaffold.maybeOf(context)?.isDrawerOpen ?? false) {
+                        Navigator.of(context).pop();
+                      } else {
+                        Get.back();
+                      }
+
+                      await weatherCtl.fetchByCurrentLocation();
+
+                      final err = weatherCtl.error.value;
+                      if (err != null) {
+                        Get.snackbar('Localização', err,
+                            snackPosition: SnackPosition.BOTTOM);
+                      } else {
+                        Get.snackbar(
+                          'Localização',
+                          'Cidade detectada e clima atualizado.',
+                          snackPosition: SnackPosition.BOTTOM,
+                        );
+                        // Se quiser navegar para outra aba, faça aqui.
+                        // Get.find<HomeViewModel>().selectedIndex.value = 0;
+                      }
+                    },
+                    child: const ListTile(
+                      leading: Icon(Icons.my_location, color: Colors.white),
+                      title: Text('Usar minha localização',
+                          style: TextStyle(color: Colors.white)),
+                      subtitle: Text('Detectar automaticamente sua cidade',
+                          style: TextStyle(color: Colors.white70, fontSize: 12)),
+                      trailing: Icon(Icons.chevron_right, color: Colors.white70),
+                    ),
+                  ),
+                ),
+              ),
               const SizedBox(height: 16),
+              // ===== FIM DO BOTÃO =====
 
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20),
@@ -102,9 +158,10 @@ class LocaisPage extends StatelessWidget {
 
               const SizedBox(height: 12),
 
+              // Lista de cidades
               Expanded(
                 child: Obx(() {
-                  final cities = controller.filteredCities;
+                  final List<CityModel> cities = controller.filteredCities;
                   return Container(
                     margin: const EdgeInsets.symmetric(horizontal: 20),
                     padding: const EdgeInsets.all(8),
@@ -121,12 +178,26 @@ class LocaisPage extends StatelessWidget {
                       itemBuilder: (context, index) {
                         final city = cities[index];
                         return Obx(() {
-                          final isSelected = controller.selectedCity.value?.name == city.name;
+                          final isSelected =
+                              controller.selectedCity.value?.name == city.name;
                           return GestureDetector(
-                            onTap: () => controller.selectCity(city),
+                            onTap: () {
+                              // <<< NOVO: ao escolher manualmente, a cidade manual tem prioridade
+                              final home = Get.find<HomeViewModel>();
+                              home.clearGpsOverride();              // 1) limpa GPS
+                              controller.selectCity(city);          // 2) seleciona cidade
+                              Navigator.of(context).pop();          // 3) fecha gaveta
+
+                              // (HomeViewModel escuta selectedCity e dispara:
+                              //  - cityName para todas as telas,
+                              //  - refresh do clima atual,
+                              //  - cityChanged para Previsão/Dados+,
+                              //  - recentra mapas se CityModel tiver lat/lon.)
+                            },
                             child: Container(
                               margin: const EdgeInsets.only(bottom: 8),
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 14),
                               decoration: BoxDecoration(
                                 color: isSelected
                                     ? Colors.blueAccent.withOpacity(0.3)
