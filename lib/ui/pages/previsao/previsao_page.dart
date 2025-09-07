@@ -3,14 +3,15 @@ import 'package:get/get.dart';
 
 import 'package:atmus/viewmodels/home/home_viewmodel.dart';
 import 'package:atmus/viewmodels/previsao/previsao_viewmodel.dart';
+import 'package:atmus/viewmodels/configuracao/configuracao_viewmodel.dart';
 
 class PrevisaoPage extends StatelessWidget {
   const PrevisaoPage({super.key});
 
   /// Aceita código (ex.: "10d") OU URL completa; usa HTTPS e fallback.
-  Widget _getWeatherIcon(String icon) {
+  Widget _getWeatherIcon(String icon, bool isDark) {
     if (icon.isEmpty) {
-      return const Icon(Icons.wb_sunny, color: Colors.yellow, size: 22);
+      return Icon(Icons.wb_sunny, color: isDark ? Colors.yellow : Colors.orange, size: 22);
     }
     final isUrl = icon.startsWith('http');
     final url = isUrl ? icon : 'https://openweathermap.org/img/wn/$icon@2x.png';
@@ -19,44 +20,54 @@ class PrevisaoPage extends StatelessWidget {
       width: 22,
       height: 22,
       errorBuilder: (context, error, stackTrace) =>
-      const Icon(Icons.wb_sunny, color: Colors.yellow, size: 22),
+          Icon(Icons.wb_sunny, color: isDark ? Colors.yellow : Colors.orange, size: 22),
     );
   }
 
-  Widget _buildHoraItem(String hora, int temp, String iconCode) {
+  Widget _buildHoraItem(String hora, double temp, String iconCode, HomeViewModel home, bool isDark) {
+    final displayTemp = home.displayTemp(temp).round();
+    final symbol = home.unidadeSimbolo;
+
     return SizedBox(
       width: 60,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(hora,
-              style: const TextStyle(color: Colors.white70, fontSize: 11),
+              style: TextStyle(color: isDark ? Colors.white70 : Colors.black54, fontSize: 11),
               overflow: TextOverflow.ellipsis),
           const SizedBox(height: 4),
-          _getWeatherIcon(iconCode),
+          _getWeatherIcon(iconCode, isDark),
           const SizedBox(height: 4),
-          Text("$temp°",
-              style: const TextStyle(
-                  color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
+          Text("$displayTemp$symbol",
+              style: TextStyle(
+                  color: isDark ? Colors.white : Colors.black,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold)),
         ],
       ),
     );
   }
 
-  Widget _buildDiaItem(String dia, List<int> tempMinMax) {
+  Widget _buildDiaItem(String dia, List<double> tempMinMax, HomeViewModel home, bool isDark) {
+    final min = home.displayTemp(tempMinMax[0]).round();
+    final max = home.displayTemp(tempMinMax[1]).round();
+    final symbol = home.unidadeSimbolo;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(dia, style: const TextStyle(color: Colors.white)),
+          Text(dia, style: TextStyle(color: isDark ? Colors.white : Colors.black)),
           Row(
             children: [
-              Text("${tempMinMax[0]}°", style: const TextStyle(color: Colors.grey)),
+              Text("$min$symbol", style: TextStyle(color: isDark ? Colors.grey : Colors.grey[700])),
               const SizedBox(width: 8),
-              Text("${tempMinMax[1]}°",
-                  style: const TextStyle(
-                      color: Colors.white, fontWeight: FontWeight.bold)),
+              Text("$max$symbol",
+                  style: TextStyle(
+                      color: isDark ? Colors.white : Colors.black,
+                      fontWeight: FontWeight.bold)),
             ],
           ),
         ],
@@ -64,12 +75,12 @@ class PrevisaoPage extends StatelessWidget {
     );
   }
 
-  Widget _card({required Widget child}) {
+  Widget _card({required Widget child, required bool isDark}) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF1B263B),
+        color: isDark ? const Color(0xFF1B263B) : Colors.grey[200],
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade800, width: 1),
+        border: Border.all(color: isDark ? Colors.grey.shade800 : Colors.grey.shade400, width: 1),
       ),
       padding: const EdgeInsets.all(16),
       child: child,
@@ -80,146 +91,154 @@ class PrevisaoPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final home = Get.find<HomeViewModel>();
     final controller = Get.put(PrevisaoViewModel(), permanent: false);
+    final themeController = Get.find<ThemeController>();
 
-    return SafeArea(
-      child: Column(
-        children: [
-          // HEADER (abre a gaveta da Home)
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.white),
-                  onPressed: () => home.selectedIndex.value = 0,
-                ),
-                Expanded(
-                  child: Center(
-                    child: Obx(() => Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.location_on, color: Colors.white),
-                        const SizedBox(width: 4),
-                        Flexible(
-                          child: Text(
-                            home.cityName.value.isEmpty
-                                ? 'Carregando...'
-                                : home.cityName.value,
-                            style: const TextStyle(
-                                color: Colors.white, fontSize: 18),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    )),
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.menu, color: Colors.white),
-                  onPressed: () => Scaffold.maybeOf(context)?.openDrawer(),
-                ),
-              ],
-            ),
-          ),
+    return Obx(() {
+      final isDark = themeController.themeMode.value == ThemeMode.dark;
+      final bgColor = isDark ? const Color(0xFF0D1B2A) : Colors.white;
 
-          // CORPO
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    "Previsão do tempo",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.2,
+      return SafeArea(
+        child: Container(
+          color: bgColor,
+          child: Column(
+            children: [
+              // HEADER (abre a gaveta da Home)
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    IconButton(
+                      icon: Icon(Icons.arrow_back, color: isDark ? Colors.white : Colors.black),
+                      onPressed: () => home.selectedIndex.value = 0,
                     ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Card 1: resumo + hora a hora
-                  _card(
-                    child: Obx(() {
-                      if (controller.isLoading.value) {
-                        return const Center(
-                          child: Padding(
-                            padding: EdgeInsets.all(16),
-                            child: CircularProgressIndicator(),
-                          ),
-                        );
-                      }
-                      if (controller.error.value != null) {
-                        return Text(
-                          controller.error.value!,
-                          style: const TextStyle(color: Colors.redAccent),
-                        );
-                      }
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            controller.resumo.value,
-                            style: const TextStyle(
-                                color: Colors.white70, fontSize: 14),
-                          ),
-                          const SizedBox(height: 24),
-                          SizedBox(
-                            height: 85,
-                            child: ListView.separated(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: controller.temperaturasHora.length,
-                              separatorBuilder: (_, __) =>
-                              const SizedBox(width: 12),
-                              itemBuilder: (_, index) {
-                                final hora = controller.temperaturasHora.keys
-                                    .elementAt(index);
-                                final temp =
-                                controller.temperaturasHora[hora]!;
-                                final iconCode =
-                                    controller.iconesHora[hora] ?? '';
-                                return _buildHoraItem(hora, temp, iconCode);
-                              },
+                    Expanded(
+                      child: Center(
+                        child: Obx(() => Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.location_on, color: isDark ? Colors.white : Colors.black),
+                            const SizedBox(width: 4),
+                            Flexible(
+                              child: Text(
+                                home.cityName.value.isEmpty
+                                    ? 'Carregando...'
+                                    : home.cityName.value,
+                                style: TextStyle(
+                                    color: isDark ? Colors.white : Colors.black, fontSize: 18),
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
-                          ),
-                        ],
-                      );
-                    }),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // Card 2: previsão por dia
-                  _card(
-                    child: Obx(() {
-                      if (controller.isLoading.value &&
-                          controller.temperaturas.isEmpty) {
-                        return const Center(
-                          child: Padding(
-                            padding: EdgeInsets.all(16),
-                            child: CircularProgressIndicator(),
-                          ),
-                        );
-                      }
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: controller.temperaturas.entries
-                            .map((e) => _buildDiaItem(e.key, e.value))
-                            .toList(),
-                      );
-                    }),
-                  ),
-
-                  const SizedBox(height: 23),
-                ],
+                          ],
+                        )),
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.menu, color: isDark ? Colors.white : Colors.black),
+                      onPressed: () => Scaffold.maybeOf(context)?.openDrawer(),
+                    ),
+                  ],
+                ),
               ),
-            ),
+
+              // CORPO
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Previsão do tempo",
+                        style: TextStyle(
+                          color: isDark ? Colors.white : Colors.black,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Card 1: resumo + hora a hora
+                      _card(
+                        isDark: isDark,
+                        child: Obx(() {
+                          if (controller.isLoading.value) {
+                            return const Center(
+                              child: Padding(
+                                padding: EdgeInsets.all(16),
+                                child: CircularProgressIndicator(),
+                              ),
+                            );
+                          }
+                          if (controller.error.value != null) {
+                            return Text(
+                              controller.error.value!,
+                              style: const TextStyle(color: Colors.redAccent),
+                            );
+                          }
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                controller.resumo.value,
+                                style: TextStyle(
+                                    color: isDark ? Colors.white70 : Colors.black54, fontSize: 14),
+                              ),
+                              const SizedBox(height: 24),
+                              SizedBox(
+                                height: 85,
+                                child: ListView.separated(
+                                  scrollDirection: Axis.horizontal,
+                                  itemCount: controller.temperaturasHora.length,
+                                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                                  itemBuilder: (_, index) {
+                                    final hora = controller.temperaturasHora.keys.elementAt(index);
+                                    final temp = controller.temperaturasHora[hora]!.toDouble();
+                                    final iconCode = controller.iconesHora[hora] ?? '';
+                                    return _buildHoraItem(hora, temp, iconCode, home, isDark);
+                                  },
+                                ),
+                              ),
+                            ],
+                          );
+                        }),
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      // Card 2: previsão por dia
+                      _card(
+                        isDark: isDark,
+                        child: Obx(() {
+                          if (controller.isLoading.value && controller.temperaturas.isEmpty) {
+                            return const Center(
+                              child: Padding(
+                                padding: EdgeInsets.all(16),
+                                child: CircularProgressIndicator(),
+                              ),
+                            );
+                          }
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: controller.temperaturas.entries
+                                .map((e) {
+                              final minMax = e.value.map((v) => v.toDouble()).toList();
+                              return _buildDiaItem(e.key, minMax, home, isDark);
+                            }).toList(),
+                          );
+                        }),
+                      ),
+
+                      const SizedBox(height: 23),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
-    );
+        ),
+      );
+    });
   }
 }

@@ -1,3 +1,4 @@
+import 'package:atmus/viewmodels/configuracao/configuracao_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:atmus/ui/routes/app_pages.dart';
@@ -8,7 +9,9 @@ class AtmusApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp(
+    final ThemeController themeController = Get.find<ThemeController>();
+
+    return Obx(() => GetMaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Atmus',
       initialRoute: Routes.splash,
@@ -16,8 +19,9 @@ class AtmusApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
         useMaterial3: true,
-        fontFamily: null, // defina caso use fonte custom
       ),
-    );
+      darkTheme: ThemeData.dark(),
+      themeMode: themeController.themeMode.value,
+    ));
   }
 }

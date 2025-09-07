@@ -13,6 +13,9 @@ class HomeViewModel extends GetxController {
   // Navegação inferior
   final selectedIndex = 0.obs;
 
+  // Unidade escolhida (Celsius ou Fahrenheit)
+  final RxString unidade = "Celsius".obs;
+
   // Clima atual exibido no Home
   final temperaturaAtual = 0.0.obs;
   final temperaturaMin = 0.0.obs;
@@ -100,4 +103,13 @@ class HomeViewModel extends GetxController {
     descricaoTempo.value = w.description;
     weatherIcon.value = w.icon;
   }
+
+  // --- Conversão de unidades ---
+  double _toFahrenheit(double celsius) => (celsius * 9 / 5) + 32;
+
+  double displayTemp(double value) {
+    return unidade.value == "Fahrenheit" ? _toFahrenheit(value) : value;
+  }
+
+  String get unidadeSimbolo => unidade.value == "Fahrenheit" ? "ºF" : "ºC";
 }

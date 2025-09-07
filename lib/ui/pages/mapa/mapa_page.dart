@@ -6,6 +6,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:atmus/presentation/controllers/location_controller.dart';
 import 'package:atmus/viewmodels/home/home_viewmodel.dart';
 import 'package:atmus/viewmodels/locais/locais_viewmodel.dart';
+import 'package:atmus/viewmodels/configuracao/configuracao_viewmodel.dart';
 
 class MapaPage extends StatefulWidget {
   const MapaPage({super.key});
@@ -17,10 +18,10 @@ class _MapaPageState extends State<MapaPage> {
   final HomeViewModel home = Get.find<HomeViewModel>();
   final LocationController loc = Get.find<LocationController>();
   final LocaisViewModel locais = Get.find<LocaisViewModel>();
+  final ThemeController themeController = Get.find<ThemeController>();
 
   final MapController _mapCtl = MapController();
-
-  final Rx<LatLng> _center = LatLng(-8.0476, -34.8770).obs; // Recife
+  final Rx<LatLng> _center = LatLng(-8.0476, -34.8770).obs;
   final RxDouble _zoom = 10.0.obs;
   final RxString _overlay = 'Nuvens'.obs;
 
@@ -31,11 +32,9 @@ class _MapaPageState extends State<MapaPage> {
   @override
   void initState() {
     super.initState();
-
     final p = loc.position.value;
     if (p != null) _center.value = LatLng(p.latitude, p.longitude);
 
-    // 1) mudanças em posição do GPS
     _gpsWorker = ever(loc.position, (pos) {
       if (pos != null) {
         final ll = LatLng(pos.latitude, pos.longitude);
@@ -45,7 +44,6 @@ class _MapaPageState extends State<MapaPage> {
       }
     });
 
-    // 2) cidade manual com lat/lon
     _cityWorker = ever(locais.selectedCity, (city) {
       if (city != null && city.lat != null && city.lon != null) {
         final ll = LatLng(city.lat!, city.lon!);
@@ -56,7 +54,6 @@ class _MapaPageState extends State<MapaPage> {
       }
     });
 
-    // 3) override explícito vindo do WeatherController
     _gpsCoordWorker = ever(home.gpsCoord, (LatLng? ll) {
       if (ll != null) {
         _center.value = ll;
@@ -75,79 +72,86 @@ class _MapaPageState extends State<MapaPage> {
     super.dispose();
   }
 
-  Widget _overlayChips() {
+  Widget _overlayChips(bool isDark) {
     final chips = <String>['Temperatura', 'Radar', 'Nuvens', 'Pressão'];
-    return Obx(
-          () => Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: chips.map((name) {
-          final selected = _overlay.value == name;
-          return ChoiceChip(
-            label: Text(name),
-            selected: selected,
-            onSelected: (_) {
-              _overlay.value = name;
-              setState(() {});
-            },
-          );
-        }).toList(),
-      ),
-    );
+    return Obx(() => Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: chips.map((name) {
+        final selected = _overlay.value == name;
+        return ChoiceChip(
+          label: Text(
+            name,
+            style: TextStyle(
+                color: selected
+                    ? Colors.white
+                    : isDark
+                    ? Colors.white70
+                    : Colors.black87),
+          ),
+          selected: selected,
+          selectedColor: Colors.blueAccent,
+          backgroundColor: isDark ? Colors.white12 : Colors.grey[300],
+          onSelected: (_) => _overlay.value = name,
+        );
+      }).toList(),
+    ));
   }
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Padding(
-        padding:
-        const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 8),
-        child: Column(
-          children: [
-            // HEADER
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.white),
-                  onPressed: () => home.selectedIndex.value = 0,
-                ),
-                Expanded(
-                  child: Center(
-                    child: Obx(() => Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.location_on, color: Colors.white),
-                        const SizedBox(width: 4),
-                        Flexible(
-                          child: Text(
-                            home.cityName.value.isEmpty
-                                ? 'Carregando...'
-                                : home.cityName.value,
-                            style: const TextStyle(
-                                color: Colors.white, fontSize: 18),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    )),
+    return Obx(() {
+      final isDark = themeController.themeMode.value == ThemeMode.dark;
+      return SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 8),
+          child: Column(
+            children: [
+              // HEADER
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.arrow_back, color: isDark ? Colors.white : Colors.black),
+                    onPressed: () => home.selectedIndex.value = 0,
                   ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.menu, color: Colors.white),
-                  onPressed: () => Scaffold.maybeOf(context)?.openDrawer(),
-                ),
-              ],
-            ),
+                  Expanded(
+                    child: Center(
+                      child: Obx(() => Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.location_on,
+                              color: isDark ? Colors.white : Colors.black),
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: Text(
+                              home.cityName.value.isEmpty
+                                  ? 'Carregando...'
+                                  : home.cityName.value,
+                              style: TextStyle(
+                                  color: isDark ? Colors.white : Colors.black,
+                                  fontSize: 18),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      )),
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.menu, color: isDark ? Colors.white : Colors.black),
+                    onPressed: () => Scaffold.maybeOf(context)?.openDrawer(),
+                  ),
+                ],
+              ),
 
-            const SizedBox(height: 12),
+              const SizedBox(height: 12),
 
-            // MAPA
-            Expanded(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: Obx(
-                      () => FlutterMap(
+              // MAPA
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: Obx(() => FlutterMap(
                     mapController: _mapCtl,
                     options: MapOptions(
                       initialCenter: _center.value,
@@ -176,26 +180,27 @@ class _MapaPageState extends State<MapaPage> {
                         ],
                       ),
                     ],
-                  ),
+                  )),
                 ),
               ),
-            ),
 
-            const SizedBox(height: 12),
+              const SizedBox(height: 12),
 
-            // Overlays
-            Container(
-              decoration: BoxDecoration(
-                color: const Color(0xFF1B263B),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.grey.shade800),
+              // Overlays
+              Container(
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF1B263B) : Colors.grey[200],
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                      color: isDark ? Colors.grey.shade800 : Colors.grey.shade400),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: _overlayChips(isDark),
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: _overlayChips(),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
-    );
+      );
+    });
   }
 }

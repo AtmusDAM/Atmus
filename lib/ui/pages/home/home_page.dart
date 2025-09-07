@@ -8,41 +8,52 @@ import 'package:atmus/ui/pages/home/home_page_content.dart';
 import 'package:atmus/ui/pages/dados/dados_page.dart';
 
 import 'package:atmus/viewmodels/home/home_viewmodel.dart';
+import 'package:atmus/viewmodels/configuracao/configuracao_viewmodel.dart';
 
 class HomePage extends StatelessWidget {
   HomePage({super.key});
 
-  // Use a instância já registrada no main.dart
   final HomeViewModel controller = Get.find<HomeViewModel>();
+  final ThemeController themeController = Get.find<ThemeController>();
 
   // NÃO use "const [ ... ]" aqui. Marque const só nos que permitem.
   final List<Widget> pages = [
-    HomePageContent(),          // não const
-    const PrevisaoPage(),       // const OK
-    DadosPage(),                // não const
-    const MapaPage(),           // const OK
+    HomePageContent(),
+    const PrevisaoPage(),
+    DadosPage(),
+    const MapaPage(),
   ];
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF0D1B2A),
+    return Obx(() {
+      final isDark = themeController.themeMode.value == ThemeMode.dark;
 
-      drawer: LocaisPage(), // não const
+      final bgColor = isDark ? const Color(0xFF0D1B2A) : Colors.white;
+      final bottomBarColor = isDark ? const Color(0xFF1B263B) : Colors.grey[200]!;
+      final drawerColor = isDark ? const Color(0xFF0D1B2A) : Colors.white;
 
-      bottomNavigationBar: Container(
-        margin: const EdgeInsets.only(bottom: 20, left: 16, right: 16),
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1B263B),
-          borderRadius: BorderRadius.circular(16),
+      return Scaffold(
+        backgroundColor: bgColor,
+        drawer: Drawer(
+          child: Container(
+            color: drawerColor,
+            child: LocaisPage(),
+          ),
         ),
-        child: Obx(
-              () => BottomNavigationBar(
+
+        bottomNavigationBar: Container(
+          margin: const EdgeInsets.only(bottom: 20, left: 16, right: 16),
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: bottomBarColor,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: BottomNavigationBar(
             backgroundColor: Colors.transparent,
             elevation: 0,
-            selectedItemColor: Colors.white,
-            unselectedItemColor: Colors.grey,
+            selectedItemColor: isDark ? Colors.white : Colors.black,
+            unselectedItemColor: isDark ? Colors.grey : Colors.grey[700],
             type: BottomNavigationBarType.fixed,
             currentIndex: controller.selectedIndex.value,
             onTap: (index) => controller.selectedIndex.value = index,
@@ -55,9 +66,9 @@ class HomePage extends StatelessWidget {
             ],
           ),
         ),
-      ),
 
-      body: Obx(() => pages[controller.selectedIndex.value]),
-    );
+        body: pages[controller.selectedIndex.value],
+      );
+    });
   }
 }

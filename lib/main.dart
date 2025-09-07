@@ -1,3 +1,5 @@
+import 'package:atmus/ui/theme/app_colors.dart';
+import 'package:atmus/viewmodels/configuracao/configuracao_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -39,19 +41,41 @@ void main() {
     // (Opcional) Registrar Previsão globalmente também:
     // Get.put<PrevisaoViewModel>(PrevisaoViewModel(), permanent: true);
 
+    Get.put<ThemeController>(ThemeController(), permanent: true);
+
     runApp(const MyApp());
   });
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp(
-      title: 'Atmus',
+    final ThemeController themeController = Get.find<ThemeController>();
+    return Obx(() => GetMaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: ThemeData.dark(),
+      title: 'Atmus',
+      theme: ThemeData(
+        brightness: Brightness.light,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: AppColors.primary,
+          brightness: Brightness.light,
+        ),
+        useMaterial3: true,
+      ),
+      darkTheme: ThemeData(
+        brightness: Brightness.dark,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: AppColors.primary,
+          brightness: Brightness.dark,
+        ),
+        useMaterial3: true,
+      ),
+      themeMode: themeController.themeMode.value,
       home: HomePage(),
-    );
+    ));
   }
 }
+
+

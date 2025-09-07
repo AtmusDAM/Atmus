@@ -1,164 +1,201 @@
+import 'package:atmus/viewmodels/configuracao/configuracao_viewmodel.dart';
+import 'package:atmus/viewmodels/home/home_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class ConfiguracaoPage extends StatelessWidget {
-  ConfiguracaoPage({Key? key}) : super(key: key);
+class ConfiguracaoPage extends StatefulWidget {
+  const ConfiguracaoPage({Key? key}) : super(key: key);
 
-  Widget _buildCard(String title, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1B263B),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey.shade800, width: 1),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Text(
-                title,
-                style: const TextStyle(color: Colors.white, fontSize: 16),
-              ),
-            ),
-            const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.white),
-          ],
-        ),
-      ),
-    );
-  }
+  @override
+  State<ConfiguracaoPage> createState() => _ConfiguracaoPageState();
+}
+
+class _ConfiguracaoPageState extends State<ConfiguracaoPage> {
+  final HomeViewModel homeController = Get.find<HomeViewModel>();
+  final ThemeController themeController = Get.find<ThemeController>();
+
+  String notificacoes = "Permitir";
+  String localizacao = "Permitir";
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF0D1B2A),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Colors.white),
-                    onPressed: () => Get.back(),
-                  ),
-                  const Text(
-                    "Recife",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.menu, color: Colors.white),
-                    onPressed: () => Scaffold.of(context).openDrawer(),
-                  ),
-                ],
-              ),
-            ),
+    return Obx(() {
+      final isDark = themeController.themeMode.value == ThemeMode.dark;
+      final bgColor = isDark ? const Color(0xFF0D1B2A) : Colors.white;
+      final textColor = isDark ? Colors.white : Colors.black;
+      final subTextColor = isDark ? Colors.grey[300]! : Colors.grey[700]!;
+      final borderColor = isDark ? Colors.grey.shade800 : Colors.grey.shade400;
 
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+      return Scaffold(
+        backgroundColor: bgColor,
+        body: SafeArea(
+          child: Column(
+            children: [
+              // Header
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Título principal
-                    const Text(
+                    IconButton(
+                      icon: Icon(Icons.arrow_back, color: textColor),
+                      onPressed: () => Get.back(),
+                    ),
+                    Text(
                       "Configuração",
                       style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.2,
+                        color: textColor,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
-
-                    const SizedBox(height: 24),
-
-                    // Seção Unidades
-                    _buildCard("Unidades", () {
-                      // Ação ao tocar
-                    }),
-
-                    // Seção Modo de exibição
-                    _buildCard("Modo de exibição", () {
-                      // Ação ao tocar
-                    }),
-
-                    const SizedBox(height: 24),
-
-                    // Personalização
-                    const Text(
-                      "Personalização",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.1,
-                      ),
+                    IconButton(
+                      icon: Icon(Icons.menu, color: textColor),
+                      onPressed: () => Scaffold.of(context).openDrawer(),
                     ),
-
-                    const SizedBox(height: 16),
-
-                    _buildCard("Noite: 70%", () {
-                      // Ação ao tocar
-                    }),
-
-                    const SizedBox(height: 24),
-
-                    // Notificações
-                    const Text(
-                      "Notificações",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.1,
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    _buildCard("Gerenciar as notificações", () {
-                      // Ação ao tocar
-                    }),
-
-                    const SizedBox(height: 24),
-
-                    // Local
-                    const Text(
-                      "Local",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.1,
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    _buildCard("Acesso à localização", () {
-                      // Ação ao tocar
-                    }),
-
-                    _buildCard("Local padrão", () {
-                      // Ação ao tocar
-                    }),
-                    const SizedBox(height: 24),
                   ],
                 ),
               ),
-            ),
-          ],
+
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 24),
+
+                      // Unidades
+                      Text(
+                        "Unidades",
+                        style: TextStyle(
+                          color: textColor,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Obx(() => RadioListTile<String>(
+                        title: Text("Celsius", style: TextStyle(color: textColor)),
+                        value: "Celsius",
+                        groupValue: homeController.unidade.value,
+                        onChanged: (value) => homeController.unidade.value = value!,
+                        activeColor: Colors.blue,
+                      )),
+                      Obx(() => RadioListTile<String>(
+                        title: Text("Fahrenheit", style: TextStyle(color: textColor)),
+                        value: "Fahrenheit",
+                        groupValue: homeController.unidade.value,
+                        onChanged: (value) => homeController.unidade.value = value!,
+                        activeColor: Colors.blue,
+                      )),
+
+                      const SizedBox(height: 24),
+
+                      // Modo de exibição
+                      Text(
+                        "Modo de exibição",
+                        style: TextStyle(
+                          color: textColor,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Obx(() => RadioListTile<ThemeMode>(
+                        title: Text("Claro", style: TextStyle(color: textColor)),
+                        value: ThemeMode.light,
+                        groupValue: themeController.themeMode.value,
+                        onChanged: (value) => themeController.changeTheme(value!),
+                        activeColor: Colors.blue,
+                      )),
+                      Obx(() => RadioListTile<ThemeMode>(
+                        title: Text("Escuro", style: TextStyle(color: textColor)),
+                        value: ThemeMode.dark,
+                        groupValue: themeController.themeMode.value,
+                        onChanged: (value) => themeController.changeTheme(value!),
+                        activeColor: Colors.blue,
+                      )),
+
+                      const SizedBox(height: 24),
+
+                      // Personalização
+                      Text(
+                        "Personalização",
+                        style: TextStyle(
+                          color: textColor,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.1,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        "Noite: 70%",
+                        style: TextStyle(color: subTextColor, fontSize: 16),
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      // Notificações
+                      Text(
+                        "Notificações",
+                        style: TextStyle(
+                          color: textColor,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.1,
+                        ),
+                      ),
+                      RadioListTile<String>(
+                        title: Text("Permitir", style: TextStyle(color: textColor)),
+                        value: "Permitir",
+                        groupValue: notificacoes,
+                        onChanged: (value) => setState(() => notificacoes = value!),
+                        activeColor: Colors.blue,
+                      ),
+                      RadioListTile<String>(
+                        title: Text("Não permitir", style: TextStyle(color: textColor)),
+                        value: "Não permitir",
+                        groupValue: notificacoes,
+                        onChanged: (value) => setState(() => notificacoes = value!),
+                        activeColor: Colors.blue,
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      // Local
+                      Text(
+                        "Local",
+                        style: TextStyle(
+                          color: textColor,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.1,
+                        ),
+                      ),
+                      RadioListTile<String>(
+                        title: Text("Permitir acesso à localização", style: TextStyle(color: textColor)),
+                        value: "Permitir",
+                        groupValue: localizacao,
+                        onChanged: (value) => setState(() => localizacao = value!),
+                        activeColor: Colors.blue,
+                      ),
+                      RadioListTile<String>(
+                        title: Text("Não permitir acesso", style: TextStyle(color: textColor)),
+                        value: "Não permitir",
+                        groupValue: localizacao,
+                        onChanged: (value) => setState(() => localizacao = value!),
+                        activeColor: Colors.blue,
+                      ),
+
+                      const SizedBox(height: 24),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
-    );
+      );
+    });
   }
 }
