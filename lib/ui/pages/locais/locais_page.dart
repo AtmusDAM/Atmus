@@ -19,10 +19,10 @@ class LocaisPage extends StatelessWidget {
       final isDark = themeController.themeMode.value == ThemeMode.dark;
       final gradientColors = isDark
           ? [
-              const Color(0xFF1B263B),
-              const Color(0xFF0D1B2A),
-              const Color(0xFF1B263B),
-            ]
+        const Color(0xFF1B263B),
+        const Color(0xFF0D1B2A),
+        const Color(0xFF1B263B),
+      ]
           : [Colors.blue[200]!, Colors.blue[100]!, Colors.blue[200]!];
 
       return Drawer(
@@ -61,7 +61,11 @@ class LocaisPage extends StatelessWidget {
                           Icons.close,
                           color: isDark ? Colors.white : Colors.black,
                         ),
-                        onPressed: () => Navigator.of(context).pop(),
+                        onPressed: () {
+                          // <<< limpa busca ao sair
+                          controller.clearSearch();
+                          Navigator.of(context).pop();
+                        },
                       ),
                     ],
                   ),
@@ -69,11 +73,14 @@ class LocaisPage extends StatelessWidget {
 
                 // Busca
                 Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 8,
-                    ),
-                    child: TextField(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 8,
+                  ),
+                  child: Obx(() {
+                    // Key muda quando clearSearch() é chamado → TextField “zera”
+                    return TextField(
+                      key: ValueKey(controller.searchRev.value),
                       onChanged: controller.filterCities,
                       style: TextStyle(
                         color: isDark ? Colors.white : Colors.black,
@@ -83,7 +90,7 @@ class LocaisPage extends StatelessWidget {
                         hintStyle: TextStyle(
                           color: (isDark ? Colors.white : Colors.black)
                               .withOpacity(0.6),
-                       ),
+                        ),
                         prefixIcon: Icon(
                           Icons.search,
                           color: isDark
@@ -91,20 +98,21 @@ class LocaisPage extends StatelessWidget {
                               : Colors.black54,
                           size: 20,
                         ),
-                      filled: true,
-                      fillColor: isDark
-                          ? Colors.white.withOpacity(0.1)
-                          : Colors.grey[300]!.withOpacity(0.5),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
+                        filled: true,
+                        fillColor: isDark
+                            ? Colors.white.withOpacity(0.1)
+                            : Colors.grey[300]!.withOpacity(0.5),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                    ),
-                  ),
+                    );
+                  }),
                 ),
 
                 // Botão "Usar minha localização"
@@ -117,11 +125,15 @@ class LocaisPage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                       onTap: () async {
                         final weatherCtl = Get.find<WeatherController>();
+                        // <<< limpa busca ao sair por aqui também
+                        controller.clearSearch();
+
                         if (Scaffold.maybeOf(context)?.isDrawerOpen ?? false) {
                           Navigator.of(context).pop();
                         } else {
                           Get.back();
                         }
+
                         await weatherCtl.fetchByCurrentLocation();
                         final err = weatherCtl.error.value;
                         if (err != null) {
@@ -206,12 +218,16 @@ class LocaisPage extends StatelessWidget {
                           return Obx(() {
                             final isSelected =
                                 controller.selectedCity.value?.name ==
-                                city.name;
+                                    city.name;
                             return GestureDetector(
                               onTap: () {
                                 final home = Get.find<HomeViewModel>();
                                 home.clearGpsOverride();
+
                                 controller.selectCity(city);
+                                // <<< limpa busca ao sair pela seleção
+                                controller.clearSearch();
+
                                 Navigator.of(context).pop();
                               },
                               child: Container(
@@ -226,22 +242,21 @@ class LocaisPage extends StatelessWidget {
                                       : Colors.transparent,
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-
                                 child: Row(
                                   children: [
                                     IconButton(
                                       icon: Icon(
-                                          city.isFavorite
-                                              ? Icons.star
-                                              : Icons.star_border,
-                                              color: city.isFavorite
-                                              ? Colors.amber
-                                              : isDark ? Colors.white
-                                                .withOpacity(0.8)
-                                          : Colors.black54,
-                                    ),
-                                    onPressed: () =>
-                                        controller.toggleFavorite(city),
+                                        city.isFavorite
+                                            ? Icons.star
+                                            : Icons.star_border,
+                                        color: city.isFavorite
+                                            ? Colors.amber
+                                            : isDark
+                                            ? Colors.white.withOpacity(0.8)
+                                            : Colors.black54,
+                                      ),
+                                      onPressed: () =>
+                                          controller.toggleFavorite(city),
                                     ),
                                     const SizedBox(width: 12),
                                     Expanded(
@@ -257,7 +272,7 @@ class LocaisPage extends StatelessWidget {
                                       ),
                                     ),
                                     Text(
-                                      "${city.minTemp}° ${city.maxTemp}°",
+                                      "${(city.minTemp ?? 0).round()}° ${(city.maxTemp ?? 0).round()}°",
                                       style: TextStyle(
                                         color: isDark
                                             ? Colors.white.withOpacity(0.9)

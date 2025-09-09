@@ -1,69 +1,106 @@
+// lib/data/models/city_model.dart
 import 'dart:convert';
 
 class CityModel {
   final String name;
-  final int? minTemp;
-  final int? maxTemp;
+  final bool isFavorite;
+  final double? minTemp;
+  final double? maxTemp;
+
+  // Extras para integração com OpenWeather (opcionais)
   final double? lat;
   final double? lon;
-  final String? country;
-  final String? state;
-  bool isFavorite;
+  final String? state;   // OpenWeather usa "state"
+  final String? country; // código ISO, ex.: "BR"
+  final bool isFromSearch;
 
-  CityModel({
+  /// Tornei o construtor const para permitir listas const SE você quiser.
+  const CityModel({
     required this.name,
+    this.isFavorite = false,
     this.minTemp,
     this.maxTemp,
     this.lat,
     this.lon,
-    this.country,
     this.state,
-    this.isFavorite = false,
+    this.country,
+    this.isFromSearch = false,
   });
 
   CityModel copyWith({
     String? name,
-    int? minTemp,
-    int? maxTemp,
+    bool? isFavorite,
+    double? minTemp,
+    double? maxTemp,
     double? lat,
     double? lon,
-    String? country,
     String? state,
-    bool? isFavorite,
+    String? country,
+    bool? isFromSearch,
   }) {
     return CityModel(
       name: name ?? this.name,
+      isFavorite: isFavorite ?? this.isFavorite,
       minTemp: minTemp ?? this.minTemp,
       maxTemp: maxTemp ?? this.maxTemp,
       lat: lat ?? this.lat,
       lon: lon ?? this.lon,
-      country: country ?? this.country,
       state: state ?? this.state,
-      isFavorite: isFavorite ?? this.isFavorite,
+      country: country ?? this.country,
+      isFromSearch: isFromSearch ?? this.isFromSearch,
+    );
+  }
+
+  /// Factory para converter um item retornado por /geo/1.0/direct (OpenWeather)
+  factory CityModel.fromOpenWeatherGeocode(Map<String, dynamic> m) {
+    return CityModel(
+      name: (m['name'] ?? '') as String,
+      state: (m['state'] as String?) ?? '',
+      country: (m['country'] as String?) ?? '',
+      lat: (m['lat'] as num?)?.toDouble(),
+      lon: (m['lon'] as num?)?.toDouble(),
+      isFromSearch: true,
+    );
+  }
+
+  /// Serialização simples para persistir favoritos
+  String serialize() {
+    final map = {
+      'name': name,
+      'isFavorite': isFavorite,
+      'minTemp': minTemp,
+      'maxTemp': maxTemp,
+      'lat': lat,
+      'lon': lon,
+      'state': state,
+      'country': country,
+    };
+    return jsonEncode(map);
+  }
+
+  static CityModel deserialize(String s) {
+    final m = jsonDecode(s) as Map<String, dynamic>;
+    return CityModel(
+      name: (m['name'] ?? '') as String,
+      isFavorite: (m['isFavorite'] ?? false) as bool,
+      minTemp: (m['minTemp'] as num?)?.toDouble(),
+      maxTemp: (m['maxTemp'] as num?)?.toDouble(),
+      lat: (m['lat'] as num?)?.toDouble(),
+      lon: (m['lon'] as num?)?.toDouble(),
+      state: m['state'] as String?,
+      country: m['country'] as String?,
+      isFromSearch: false,
     );
   }
 
   factory CityModel.fromJson(Map<String, dynamic> json) {
     return CityModel(
-      name: json['name'] as String,
-      minTemp: json['minTemp'] as int?,
-      maxTemp: json['maxTemp'] as int?,
+      name: (json['name'] ?? '') as String,
+      state: (json['state'] as String?) ?? '',
+      country: (json['country'] as String?) ?? '',
       lat: (json['lat'] as num?)?.toDouble(),
       lon: (json['lon'] as num?)?.toDouble(),
-      country: json['country'] as String?,
-      state: json['state'] as String?,
-      isFavorite: json['isFavorite'] as bool? ?? false,
+      isFromSearch: true,
     );
   }
-
-  Map<String, dynamic> toJson() => {
-    'name': name,
-    'minTemp': minTemp,
-    'maxTemp': maxTemp,
-    'isFavorite': isFavorite,
-    if (lat != null) 'lat': lat,
-    if (lon != null) 'lon': lon,
-    if (country != null) 'country': country,
-    if (state != null) 'state': state,
-  };
 }
