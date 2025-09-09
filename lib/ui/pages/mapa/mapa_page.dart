@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-
+import 'package:atmus/data/services/api_service.dart';
 import 'package:atmus/presentation/controllers/location_controller.dart';
 import 'package:atmus/viewmodels/home/home_viewmodel.dart';
 import 'package:atmus/viewmodels/locais/locais_viewmodel.dart';
@@ -165,6 +165,25 @@ class _MapaPageState extends State<MapaPage> {
                         'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
                         subdomains: const ['a', 'b', 'c'],
                       ),
+                      Obx(() {
+                        final layer = _overlay.value;
+                        if (layer.isEmpty) return const SizedBox.shrink();
+
+                        final layerMap = {
+                          'Temperatura': 'temp_new',
+                          'Radar': 'precipitation_new',
+                          'Nuvens': 'clouds_new',
+                          'Pressão': 'pressure_new',
+                        };
+
+                        final url =
+                            'https://tile.openweathermap.org/map/${layerMap[layer]}/{z}/{x}/{y}.png?appid=${ApiService.apiKey}';
+
+                        return TileLayer(
+                          urlTemplate: url,
+                          backgroundColor: Colors.transparent,
+                        );
+                      }),
                       MarkerLayer(
                         markers: [
                           Marker(

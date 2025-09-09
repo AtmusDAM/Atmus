@@ -1,5 +1,4 @@
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 
 import 'package:atmus/data/repositories/weather_repository.dart';
 import 'package:atmus/data/models/forecast_model.dart';

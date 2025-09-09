@@ -1,16 +1,24 @@
+import 'dart:convert';
+
 class CityModel {
   final String name;
-  final int minTemp;
-  final int maxTemp;
+  final int? minTemp;
+  final int? maxTemp;
   final double? lat;
   final double? lon;
+  final String? country;
+  final String? state;
+  bool isFavorite;
 
   CityModel({
     required this.name,
-    required this.minTemp,
-    required this.maxTemp,
+    this.minTemp,
+    this.maxTemp,
     this.lat,
     this.lon,
+    this.country,
+    this.state,
+    this.isFavorite = false,
   });
 
   CityModel copyWith({
@@ -19,6 +27,9 @@ class CityModel {
     int? maxTemp,
     double? lat,
     double? lon,
+    String? country,
+    String? state,
+    bool? isFavorite,
   }) {
     return CityModel(
       name: name ?? this.name,
@@ -26,16 +37,22 @@ class CityModel {
       maxTemp: maxTemp ?? this.maxTemp,
       lat: lat ?? this.lat,
       lon: lon ?? this.lon,
+      country: country ?? this.country,
+      state: state ?? this.state,
+      isFavorite: isFavorite ?? this.isFavorite,
     );
   }
 
   factory CityModel.fromJson(Map<String, dynamic> json) {
     return CityModel(
       name: json['name'] as String,
-      minTemp: json['minTemp'] as int,
-      maxTemp: json['maxTemp'] as int,
+      minTemp: json['minTemp'] as int?,
+      maxTemp: json['maxTemp'] as int?,
       lat: (json['lat'] as num?)?.toDouble(),
       lon: (json['lon'] as num?)?.toDouble(),
+      country: json['country'] as String?,
+      state: json['state'] as String?,
+      isFavorite: json['isFavorite'] as bool? ?? false,
     );
   }
 
@@ -43,7 +60,10 @@ class CityModel {
     'name': name,
     'minTemp': minTemp,
     'maxTemp': maxTemp,
+    'isFavorite': isFavorite,
     if (lat != null) 'lat': lat,
     if (lon != null) 'lon': lon,
+    if (country != null) 'country': country,
+    if (state != null) 'state': state,
   };
 }

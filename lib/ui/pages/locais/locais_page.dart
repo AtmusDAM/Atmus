@@ -19,10 +19,10 @@ class LocaisPage extends StatelessWidget {
       final isDark = themeController.themeMode.value == ThemeMode.dark;
       final gradientColors = isDark
           ? [
-        const Color(0xFF1B263B),
-        const Color(0xFF0D1B2A),
-        const Color(0xFF1B263B),
-      ]
+              const Color(0xFF1B263B),
+              const Color(0xFF0D1B2A),
+              const Color(0xFF1B263B),
+            ]
           : [Colors.blue[200]!, Colors.blue[100]!, Colors.blue[200]!];
 
       return Drawer(
@@ -57,7 +57,10 @@ class LocaisPage extends StatelessWidget {
                         ),
                       ),
                       IconButton(
-                        icon: Icon(Icons.close, color: isDark ? Colors.white : Colors.black),
+                        icon: Icon(
+                          Icons.close,
+                          color: isDark ? Colors.white : Colors.black,
+                        ),
                         onPressed: () => Navigator.of(context).pop(),
                       ),
                     ],
@@ -65,40 +68,42 @@ class LocaisPage extends StatelessWidget {
                 ),
 
                 // Busca
-                Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: isDark ? Colors.white.withOpacity(0.1) : Colors.grey[300]!.withOpacity(0.5),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: isDark ? Colors.white.withOpacity(0.2) : Colors.grey.shade400,
-                      width: 1,
+                Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 8,
                     ),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.search,
-                          color: isDark ? Colors.white.withOpacity(0.7) : Colors.black54,
-                          size: 20),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: TextField(
-                          onChanged: (value) => controller.filterCities(value),
-                          style: TextStyle(
-                              color: isDark ? Colors.white : Colors.black, fontSize: 16),
-                          decoration: InputDecoration(
-                            hintText: 'Encontrar local',
-                            hintStyle: TextStyle(
-                              color: (isDark ? Colors.white : Colors.black).withOpacity(0.6),
-                              fontSize: 16,
-                            ),
-                            border: InputBorder.none,
-                            contentPadding: EdgeInsets.zero,
-                          ),
-                        ),
+                    child: TextField(
+                      onChanged: controller.filterCities,
+                      style: TextStyle(
+                        color: isDark ? Colors.white : Colors.black,
                       ),
-                    ],
+                      decoration: InputDecoration(
+                        hintText: 'Encontrar local',
+                        hintStyle: TextStyle(
+                          color: (isDark ? Colors.white : Colors.black)
+                              .withOpacity(0.6),
+                       ),
+                        prefixIcon: Icon(
+                          Icons.search,
+                          color: isDark
+                              ? Colors.white.withOpacity(0.7)
+                              : Colors.black54,
+                          size: 20,
+                        ),
+                      filled: true,
+                      fillColor: isDark
+                          ? Colors.white.withOpacity(0.1)
+                          : Colors.grey[300]!.withOpacity(0.5),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                    ),
                   ),
                 ),
 
@@ -120,8 +125,11 @@ class LocaisPage extends StatelessWidget {
                         await weatherCtl.fetchByCurrentLocation();
                         final err = weatherCtl.error.value;
                         if (err != null) {
-                          Get.snackbar('Localização', err,
-                              snackPosition: SnackPosition.BOTTOM);
+                          Get.snackbar(
+                            'Localização',
+                            err,
+                            snackPosition: SnackPosition.BOTTOM,
+                          );
                         } else {
                           Get.snackbar(
                             'Localização',
@@ -131,15 +139,27 @@ class LocaisPage extends StatelessWidget {
                         }
                       },
                       child: ListTile(
-                        leading: Icon(Icons.my_location, color: isDark ? Colors.white : Colors.black),
-                        title: Text('Usar minha localização',
-                            style: TextStyle(color: isDark ? Colors.white : Colors.black)),
-                        subtitle: Text('Detectar automaticamente sua cidade',
-                            style: TextStyle(
-                                color: isDark ? Colors.white70 : Colors.black54,
-                                fontSize: 12)),
-                        trailing: Icon(Icons.chevron_right,
-                            color: isDark ? Colors.white70 : Colors.black54),
+                        leading: Icon(
+                          Icons.my_location,
+                          color: isDark ? Colors.white : Colors.black,
+                        ),
+                        title: Text(
+                          'Usar minha localização',
+                          style: TextStyle(
+                            color: isDark ? Colors.white : Colors.black,
+                          ),
+                        ),
+                        subtitle: Text(
+                          'Detectar automaticamente sua cidade',
+                          style: TextStyle(
+                            color: isDark ? Colors.white70 : Colors.black54,
+                            fontSize: 12,
+                          ),
+                        ),
+                        trailing: Icon(
+                          Icons.chevron_right,
+                          color: isDark ? Colors.white70 : Colors.black54,
+                        ),
                       ),
                     ),
                   ),
@@ -168,10 +188,14 @@ class LocaisPage extends StatelessWidget {
                       margin: const EdgeInsets.symmetric(horizontal: 20),
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: isDark ? Colors.white.withOpacity(0.08) : Colors.grey[200]!.withOpacity(0.3),
+                        color: isDark
+                            ? Colors.white.withOpacity(0.08)
+                            : Colors.grey[200]!.withOpacity(0.3),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: isDark ? Colors.white.withOpacity(0.1) : Colors.grey.shade400,
+                          color: isDark
+                              ? Colors.white.withOpacity(0.1)
+                              : Colors.grey.shade400,
                           width: 1,
                         ),
                       ),
@@ -181,7 +205,8 @@ class LocaisPage extends StatelessWidget {
                           final city = cities[index];
                           return Obx(() {
                             final isSelected =
-                                controller.selectedCity.value?.name == city.name;
+                                controller.selectedCity.value?.name ==
+                                city.name;
                             return GestureDetector(
                               onTap: () {
                                 final home = Get.find<HomeViewModel>();
@@ -192,28 +217,40 @@ class LocaisPage extends StatelessWidget {
                               child: Container(
                                 margin: const EdgeInsets.only(bottom: 8),
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 14),
+                                  horizontal: 12,
+                                  vertical: 14,
+                                ),
                                 decoration: BoxDecoration(
                                   color: isSelected
                                       ? Colors.blueAccent.withOpacity(0.3)
                                       : Colors.transparent,
                                   borderRadius: BorderRadius.circular(8),
                                 ),
+
                                 child: Row(
                                   children: [
-                                    Icon(
-                                      isSelected ? Icons.star : Icons.location_on,
-                                      color: isDark
-                                          ? Colors.white.withOpacity(0.8)
+                                    IconButton(
+                                      icon: Icon(
+                                          city.isFavorite
+                                              ? Icons.star
+                                              : Icons.star_border,
+                                              color: city.isFavorite
+                                              ? Colors.amber
+                                              : isDark ? Colors.white
+                                                .withOpacity(0.8)
                                           : Colors.black54,
-                                      size: 18,
+                                    ),
+                                    onPressed: () =>
+                                        controller.toggleFavorite(city),
                                     ),
                                     const SizedBox(width: 12),
                                     Expanded(
                                       child: Text(
                                         city.name,
                                         style: TextStyle(
-                                          color: isDark ? Colors.white : Colors.black,
+                                          color: isDark
+                                              ? Colors.white
+                                              : Colors.black,
                                           fontSize: 16,
                                           fontWeight: FontWeight.w400,
                                         ),
