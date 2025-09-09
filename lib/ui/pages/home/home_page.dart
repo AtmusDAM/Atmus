@@ -62,7 +62,7 @@ class HomePage extends StatelessWidget {
               BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
               BottomNavigationBarItem(icon: Icon(Icons.calendar_today), label: ''),
               BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: ''),
-              BottomNavigationBarItem(icon: Icon(Icons.settings), label: ''),
+              BottomNavigationBarItem(icon: Icon(Icons.map), label: ''),
             ],
           ),
         ),

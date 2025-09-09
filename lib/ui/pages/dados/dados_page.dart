@@ -121,7 +121,7 @@ class DadosPage extends StatelessWidget {
                 const SizedBox(height: 24),
 
                 Text(
-                  "Dados+",
+                  "Dados +",
                   style: TextStyle(
                     color: isDark ? Colors.white : Colors.black,
                     fontSize: 22,
