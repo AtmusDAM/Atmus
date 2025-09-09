@@ -1,46 +1,45 @@
-import 'package:atmus/ui/theme/app_colors.dart';
-import 'package:atmus/viewmodels/configuracao/configuracao_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
+import 'package:atmus/ui/theme/app_colors.dart';
 import 'package:atmus/ui/pages/home/home_page.dart';
 
 // ViewModels
 import 'package:atmus/viewmodels/locais/locais_viewmodel.dart';
 import 'package:atmus/viewmodels/home/home_viewmodel.dart';
 import 'package:atmus/viewmodels/dados/dados_viewmodel.dart';
-// (Se quiser registrar a Previsão globalmente também, importe:)
 // import 'package:atmus/viewmodels/previsao/previsao_viewmodel.dart';
 
 // Core/Controllers/Services
-import 'package:atmus/secrets.dart';
-import 'package:atmus/core/location_service.dart';
+import 'package:atmus/viewmodels/configuracao/configuracao_viewmodel.dart';
 import 'package:atmus/presentation/controllers/location_controller.dart';
 import 'package:atmus/presentation/controllers/weather_controller.dart';
 import 'package:atmus/data/weather_service.dart';
+import 'package:atmus/core/location_service.dart';
+import 'package:atmus/secrets.dart';
 
 void main() {
-  initializeDateFormatting('pt_BR', null).then((_) {
-    // Ordem importa por causa das dependências:
+  // >>> ESSENCIAL para plugins (SharedPreferences, Geolocator etc.)
+  WidgetsFlutterBinding.ensureInitialized();
 
-    // 1) Locais (usado por Home/Dados/Previsão)
+  initializeDateFormatting('pt_BR', null).then((_) {
+    // 1) Locais
     Get.put<LocaisViewModel>(LocaisViewModel());
 
-    // 2) Home (depende de Locais)
+    // 2) Home
     Get.put<HomeViewModel>(HomeViewModel());
 
-    // 3) Infra de localização/clima
+    // 3) Infra localização/clima
     Get.put<LocationController>(LocationController(LocationService()));
     Get.put<WeatherService>(WeatherService(apiKey: Secrets.weatherApiKey));
-    Get.put<WeatherController>(WeatherController(Get.find<WeatherService>()));
+    Get.put<WeatherController>(WeatherController());
 
-    // 4) Dados+ (depende de Locais e Home)
+    // 4) Dados
     Get.put<DadosViewModel>(DadosViewModel(), permanent: true);
-
-    // (Opcional) Registrar Previsão globalmente também:
     // Get.put<PrevisaoViewModel>(PrevisaoViewModel(), permanent: true);
 
+    // 5) Tema
     Get.put<ThemeController>(ThemeController(), permanent: true);
 
     runApp(const MyApp());
@@ -53,29 +52,29 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeController themeController = Get.find<ThemeController>();
-    return Obx(() => GetMaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Atmus',
-      theme: ThemeData(
-        brightness: Brightness.light,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: AppColors.primary,
+    return Obx(
+          () => GetMaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'Atmus',
+        theme: ThemeData(
           brightness: Brightness.light,
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: AppColors.primary,
+            brightness: Brightness.light,
+          ),
+          useMaterial3: true,
         ),
-        useMaterial3: true,
-      ),
-      darkTheme: ThemeData(
-        brightness: Brightness.dark,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: AppColors.primary,
+        darkTheme: ThemeData(
           brightness: Brightness.dark,
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: AppColors.primary,
+            brightness: Brightness.dark,
+          ),
+          useMaterial3: true,
         ),
-        useMaterial3: true,
+        themeMode: themeController.themeMode.value,
+        home: HomePage(),
       ),
-      themeMode: themeController.themeMode.value,
-      home: HomePage(),
-    ));
+    );
   }
 }
-
-

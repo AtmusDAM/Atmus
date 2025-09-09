@@ -5,6 +5,7 @@ import 'package:atmus/data/repositories/weather_repository.dart';
 import 'package:atmus/data/models/forecast_model.dart';
 import 'package:atmus/viewmodels/locais/locais_viewmodel.dart';
 import 'package:atmus/viewmodels/home/home_viewmodel.dart';
+import 'package:atmus/data/models/city_model.dart';
 
 class PrevisaoViewModel extends GetxController {
   final WeatherRepository _repository = WeatherRepository();
@@ -41,10 +42,11 @@ class PrevisaoViewModel extends GetxController {
     _run();
 
     // 2) quando mudar a cidade da gaveta
-    ever(_locais.selectedCity, (_) => _run());
+    ever<CityModel?>(_locais.selectedCity, (_) => _run());
 
-    // 3) quando vier cidade do GPS (Opção B)
-    ever(_home.gpsCity, (_) => _run());
+    // 3) quando a Home mudar a localização efetiva (via GPS ou seleção por lat/lon).
+    //    Usamos lastQuery como “sinal” de mudança e tentamos ler o nome da cidade da Home.
+    ever<String>(_home.lastQuery, (_) => _run());
   }
 
   Future<void> _run() async {
@@ -52,11 +54,7 @@ class PrevisaoViewModel extends GetxController {
     error.value = null;
 
     try {
-      // Prioridade: cidade do GPS; senão, da gaveta
-      String? cityName = _home.gpsCity.value.isNotEmpty
-          ? _home.gpsCity.value
-          : _locais.selectedCity.value?.name;
-
+      final cityName = _resolveCityName();
       if (cityName == null || cityName.trim().isEmpty) {
         error.value = 'Cidade não definida.';
         isLoading.value = false;
@@ -80,6 +78,29 @@ class PrevisaoViewModel extends GetxController {
     } finally {
       isLoading.value = false;
     }
+  }
+
+  /// Tenta obter o nome da cidade de forma robusta sem depender de gpsCity.
+  String? _resolveCityName() {
+    // 1) Se a gaveta tiver uma cidade selecionada, priorize essa
+    final selected = _locais.selectedCity.value?.name;
+    if (selected != null && selected.trim().isNotEmpty) {
+      return selected.trim();
+    }
+
+    // 2) Caso contrário, tente ler o nome exibido atualmente na Home (se ela expõe weatherJson)
+    try {
+      final dynamic j = _home.weatherJson.value;
+      if (j is Map<String, dynamic>) {
+        final name = (j['name'] ?? '') as String;
+        if (name.trim().isNotEmpty) return name.trim();
+      }
+    } catch (_) {
+      // se o HomeViewModel não tiver weatherJson, simplesmente ignore
+    }
+
+    // 3) Sem fonte de nome
+    return null;
   }
 
   void _buildResumo(Forecast f) {

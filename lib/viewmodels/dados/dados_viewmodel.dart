@@ -4,6 +4,7 @@ import 'package:atmus/data/repositories/weather_repository.dart';
 import 'package:atmus/data/models/forecast_model.dart';
 import 'package:atmus/viewmodels/locais/locais_viewmodel.dart';
 import 'package:atmus/viewmodels/home/home_viewmodel.dart';
+import 'package:atmus/data/models/city_model.dart';
 
 class DadosViewModel extends GetxController {
   final WeatherRepository _repository = WeatherRepository();
@@ -20,20 +21,19 @@ class DadosViewModel extends GetxController {
   final error = RxnString();
 
   // Campos “novos” (fonte de verdade)
-  final pressao = 0.obs;       // hPa
-  final umidade = 0.obs;       // %
-  final ventoMs = 0.0.obs;     // m/s
+  final pressao = 0.obs;     // hPa
+  final umidade = 0.obs;     // %
+  final ventoMs = 0.0.obs;   // m/s
   final uv = 'N/D'.obs;
 
-  final chuvaManha = 0.obs; // %
-  final chuvaTarde = 0.obs; // %
-  final chuvaNoite = 0.obs; // %
+  final chuvaManha = 0.obs;  // %
+  final chuvaTarde = 0.obs;  // %
+  final chuvaNoite = 0.obs;  // %
 
   /// === Aliases com os nomes que a página usa ===
-  /// (mantemos sincronizados ao atualizar)
-  final vento = 0.0.obs;         // alias de ventoMs (double) — mantém compatibilidade
-  final ventoInt = 0.obs;        // <<< NOVO: versão inteira p/ UIs que esperam RxInt
-  final indiceUV = 'N/D'.obs;    // alias de uv
+  final vento = 0.0.obs;       // alias de ventoMs (double)
+  final ventoInt = 0.obs;      // versão inteira para UIs que esperam RxInt
+  final indiceUV = 'N/D'.obs;  // alias de uv
   final precipitacaoManha = 0.obs; // alias de chuvaManha
   final precipitacaoTarde = 0.obs; // alias de chuvaTarde
   final precipitacaoNoite = 0.obs; // alias de chuvaNoite
@@ -45,14 +45,14 @@ class DadosViewModel extends GetxController {
     _run();
 
     // Recarrega ao trocar cidade na gaveta
-    ever(_locais.selectedCity, (_) => _run());
+    ever<CityModel?>(_locais.selectedCity, (_) => _run());
 
-    // Recarrega quando vier cidade do GPS
-    ever(_home.gpsCity, (_) => _run());
+    // Recarrega quando a Home muda a localização efetiva (GPS ou seleção por lat/lon)
+    ever<String>(_home.lastQuery, (_) => _run());
   }
 
-  /// Permite ao WeatherController forçar refresh após obter o GPS
-  void refreshFromGpsCity() {
+  /// Permite a outros componentes forçarem refresh
+  void refreshFromSelection() {
     _run();
   }
 
@@ -61,11 +61,7 @@ class DadosViewModel extends GetxController {
     error.value = null;
 
     try {
-      // Prioridade: cidade do GPS; senão, cidade da gaveta
-      String? cityName = _home.gpsCity.value.isNotEmpty
-          ? _home.gpsCity.value
-          : _locais.selectedCity.value?.name;
-
+      final cityName = _resolveCityName();
       if (cityName == null || cityName.trim().isEmpty) {
         error.value = 'Cidade não definida.';
         isLoading.value = false;
@@ -92,14 +88,14 @@ class DadosViewModel extends GetxController {
       umidade.value = current.humidity;
 
       ventoMs.value = current.windMs;
-      vento.value   = current.windMs;           // mantém double
-      ventoInt.value = current.windMs.round();  // <<< sincroniza inteiro
+      vento.value   = current.windMs;          // mantém double
+      ventoInt.value = current.windMs.round(); // sincroniza inteiro
 
-      // UV não vem nesse endpoint → mantém “N/D”
+      // UV não vem desse endpoint → mantém “N/D”
       uv.value = 'N/D';
-      indiceUV.value = 'N/D'; // alias sincronizado
+      indiceUV.value = 'N/D';
 
-      // POP por período (manhã/tarde/noite) nas próximas 24h
+      // Probabilidade de precipitação por período nas próximas 24h
       double manhaSum = 0.0, tardeSum = 0.0, noiteSum = 0.0;
       int manhaCount = 0, tardeCount = 0, noiteCount = 0;
 
@@ -136,5 +132,26 @@ class DadosViewModel extends GetxController {
     } finally {
       isLoading.value = false;
     }
+  }
+
+  /// Obtém o nome da cidade sem depender de gpsCity:
+  /// 1) cidade selecionada na gaveta; 2) nome atual exposto pela Home (weatherJson['name'])
+  String? _resolveCityName() {
+    final selected = _locais.selectedCity.value?.name;
+    if (selected != null && selected.trim().isNotEmpty) {
+      return selected.trim();
+    }
+
+    try {
+      final dynamic j = _home.weatherJson.value;
+      if (j is Map<String, dynamic>) {
+        final name = (j['name'] ?? '') as String;
+        if (name.trim().isNotEmpty) return name.trim();
+      }
+    } catch (_) {
+      // Se o Home não expuser weatherJson, apenas ignore
+    }
+
+    return null;
   }
 }
