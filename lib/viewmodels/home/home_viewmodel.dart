@@ -69,6 +69,23 @@ class HomeViewModel extends GetxController {
   Rxn<LatLng> get gpsCoord => _gpsCoord;
 
   // ---------------------------------------------------------------------------
+  // NOVO: coordenada global para sincronizar TODOS os mapas
+  // ---------------------------------------------------------------------------
+  /// Coordenada atual da cidade selecionada (por busca, seed ou GPS).
+  /// Use esta Rx em qualquer mapa para ficar sincronizado.
+  final Rxn<LatLng> currentCoord = Rxn<LatLng>();
+
+  /// Atualiza a coordenada global (e mantém compat com gpsCoord, se pertinente).
+  void setCoord(double lat, double lon, {bool fromGps = false}) {
+    final ll = LatLng(lat, lon);
+    currentCoord.value = ll;
+    if (fromGps) {
+      // Mantém compatibilidade com telas antigas que observam gpsCoord
+      _gpsCoord.value = ll;
+    }
+  }
+
+  // ---------------------------------------------------------------------------
   // Campos reativos esperados pela Home (home_page_content.dart)
   // ---------------------------------------------------------------------------
   final RxDouble temperaturaAtual = 0.0.obs; // °C
@@ -108,6 +125,8 @@ class HomeViewModel extends GetxController {
     final lon = double.tryParse(parts[1].trim());
     if (lat == null || lon == null) return;
 
+    // Atualiza coord imediatamente para mapas reagirem rápido
+    setCoord(lat, lon);
     await _fetchAndSet(lat, lon);
   }
 
@@ -120,6 +139,9 @@ class HomeViewModel extends GetxController {
       final first = results.first;
       final lat = (first['lat'] as num).toDouble();
       final lon = (first['lon'] as num).toDouble();
+
+      // Coord global para sincronizar mapas
+      setCoord(lat, lon);
       await _fetchAndSet(lat, lon);
     } catch (_) {
       // silencioso para não quebrar UI
@@ -137,14 +159,17 @@ class HomeViewModel extends GetxController {
       lat: lat,
       lon: lon,
     );
-    _gpsCoord.value = LatLng(lat, lon); // Para o mapa reagir
+    // Atualiza ambas coordenadas reativas (compat + global)
+    setCoord(lat, lon, fromGps: true);
     await _fetchAndSet(lat, lon, overrideCityName: resolvedCityName);
   }
 
   /// Usado pela tela de Locais quando o usuário “desgruda” do GPS
   void clearGpsOverride() {
     _gpsCity.value = null;
-    _gpsCoord.value = null; // limpa coord do mapa também
+    _gpsCoord.value = null; // limpa coord do mapa (compat)
+    // Não limpamos currentCoord para não apagar o foco atual dos mapas;
+    // a próxima seleção de cidade irá atualizá-la.
   }
 
   // ---------------------------------------------------------------------------
@@ -189,6 +214,9 @@ class HomeViewModel extends GetxController {
 
       descricaoTempo.value = (weather0['description'] ?? '') as String;
       weatherIcon.value    = (weather0['icon'] ?? '') as String;
+
+      // Mantém coord global coerente (caso backend retorne coords “corrigidas”)
+      currentCoord.value = LatLng(lat, lon);
 
       // Atualiza lastQuery e persiste
       lastQuery.value = '$lat,$lon';
