@@ -24,7 +24,6 @@ class LocaisViewModel extends GetxController {
     super.onInit();
     // Inicial: lista completa
     filteredCities.assignAll(_cities);
-    // Se quiser uma cidade padrão:
     selectedCity.value = _cities.first;
   }
 
@@ -43,6 +42,19 @@ class LocaisViewModel extends GetxController {
     selectedCity.value = city;
   }
 
-  // getters úteis (mantêm compatibilidade com seu código atual)
+  void toggleFavorite(CityModel city) {
+    final index = _cities.indexWhere((c) => c.name == city.name);
+    if (index != -1) {
+      final updatedCity = city.copyWith(isFavorite: !city.isFavorite);
+      _cities[index] = updatedCity;
+      // Also update the filtered list if the city is present there
+      final filteredIndex = filteredCities.indexWhere((c) => c.name == city.name);
+      if (filteredIndex != -1) {
+        filteredCities[filteredIndex] = updatedCity;
+      }
+    }
+  }
+
   List<CityModel> get cities => _cities;
+  List<CityModel> get favoriteCities => _cities.where((c) => c.isFavorite).toList();
 }

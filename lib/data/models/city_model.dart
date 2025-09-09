@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class CityModel {
   final String name;
   final int? minTemp;
@@ -6,6 +8,7 @@ class CityModel {
   final double? lon;
   final String? country;
   final String? state;
+  bool isFavorite;
 
   CityModel({
     required this.name,
@@ -15,6 +18,7 @@ class CityModel {
     this.lon,
     this.country,
     this.state,
+    this.isFavorite = false,
   });
 
   CityModel copyWith({
@@ -25,6 +29,7 @@ class CityModel {
     double? lon,
     String? country,
     String? state,
+    bool? isFavorite,
   }) {
     return CityModel(
       name: name ?? this.name,
@@ -34,6 +39,7 @@ class CityModel {
       lon: lon ?? this.lon,
       country: country ?? this.country,
       state: state ?? this.state,
+      isFavorite: isFavorite ?? this.isFavorite,
     );
   }
 
@@ -46,6 +52,7 @@ class CityModel {
       lon: (json['lon'] as num?)?.toDouble(),
       country: json['country'] as String?,
       state: json['state'] as String?,
+      isFavorite: json['isFavorite'] as bool? ?? false,
     );
   }
 
@@ -53,6 +60,7 @@ class CityModel {
     'name': name,
     'minTemp': minTemp,
     'maxTemp': maxTemp,
+    'isFavorite': isFavorite,
     if (lat != null) 'lat': lat,
     if (lon != null) 'lon': lon,
     if (country != null) 'country': country,

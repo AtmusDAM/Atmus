@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 import 'package:atmus/viewmodels/locais/locais_viewmodel.dart';
 import 'package:atmus/data/models/city_model.dart';
 import 'package:atmus/presentation/controllers/weather_controller.dart';
-import 'package:atmus/ui/routes/app_pages.dart';
 import 'package:atmus/viewmodels/home/home_viewmodel.dart';
 import 'package:atmus/viewmodels/configuracao/configuracao_viewmodel.dart';
 
@@ -69,58 +68,41 @@ class LocaisPage extends StatelessWidget {
                 ),
 
                 // Busca
-                GestureDetector(
-                  onTap: () async {
-                    final result = await Get.toNamed(Routes.search);
-                    if (result is CityModel) {
-                      controller.selectCity(result);
-                      final home = Get.find<HomeViewModel>();
-                      home.clearGpsOverride();
-                      Navigator.of(context).pop();
-                    }
-                  },
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(
+                Padding(
+                    padding: const EdgeInsets.symmetric(
                       horizontal: 20,
                       vertical: 8,
                     ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? Colors.white.withOpacity(0.1)
-                          : Colors.grey[300]!.withOpacity(0.5),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: isDark
-                            ? Colors.white.withOpacity(0.2)
-                            : Colors.grey.shade400,
-                        width: 1,
+                    child: TextField(
+                      onChanged: controller.filterCities,
+                      style: TextStyle(
+                        color: isDark ? Colors.white : Colors.black,
                       ),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
+                      decoration: InputDecoration(
+                        hintText: 'Encontrar local',
+                        hintStyle: TextStyle(
+                          color: (isDark ? Colors.white : Colors.black)
+                              .withOpacity(0.6),
+                       ),
+                        prefixIcon: Icon(
                           Icons.search,
                           color: isDark
                               ? Colors.white.withOpacity(0.7)
                               : Colors.black54,
                           size: 20,
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            'Encontrar local',
-                            style: TextStyle(
-                              color: (isDark ? Colors.white : Colors.black)
-                                  .withOpacity(0.6),
-                              fontSize: 16,
-                            ),
-                          ),
-                        ),
-                      ],
+                      filled: true,
+                      fillColor: isDark
+                          ? Colors.white.withOpacity(0.1)
+                          : Colors.grey[300]!.withOpacity(0.5),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
                     ),
                   ),
                 ),
@@ -244,16 +226,22 @@ class LocaisPage extends StatelessWidget {
                                       : Colors.transparent,
                                   borderRadius: BorderRadius.circular(8),
                                 ),
+
                                 child: Row(
                                   children: [
-                                    Icon(
-                                      isSelected
-                                          ? Icons.star
-                                          : Icons.location_on,
-                                      color: isDark
-                                          ? Colors.white.withOpacity(0.8)
+                                    IconButton(
+                                      icon: Icon(
+                                          city.isFavorite
+                                              ? Icons.star
+                                              : Icons.star_border,
+                                              color: city.isFavorite
+                                              ? Colors.amber
+                                              : isDark ? Colors.white
+                                                .withOpacity(0.8)
                                           : Colors.black54,
-                                      size: 18,
+                                    ),
+                                    onPressed: () =>
+                                        controller.toggleFavorite(city),
                                     ),
                                     const SizedBox(width: 12),
                                     Expanded(
