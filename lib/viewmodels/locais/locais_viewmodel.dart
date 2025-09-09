@@ -1,4 +1,3 @@
-// lib/viewmodels/locais/locais_viewmodel.dart
 import 'dart:async';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -13,7 +12,7 @@ class LocaisViewModel extends GetxController {
   LocaisViewModel({OpenWeatherService? service})
       : _svc = service ?? OpenWeatherService();
 
-  // Fonte da verdade
+  // ---------------- Fonte da verdade ----------------
   final RxList<CityModel> _all = <CityModel>[].obs;
 
   // Lista para UI
@@ -24,15 +23,18 @@ class LocaisViewModel extends GetxController {
   final RxBool loading = false.obs;
   Timer? _debounce;
 
+  /// Key reativa para “resetar” o TextField de busca
+  final RxInt searchRev = 0.obs;
+
   // Seleção atual
   final Rxn<CityModel> selectedCity = Rxn<CityModel>();
 
-  // Cidades seed (não exibimos se não forem favoritas)
-  final List<CityModel> _seed = const <CityModel>[
-    CityModel(name: 'Garanhuns'),
-    CityModel(name: 'Recife'),
-    CityModel(name: 'São Paulo'),
-    CityModel(name: 'Rio de Janeiro'),
+  // Cidades seed (MUTÁVEL para podermos refletir favoritos restaurados)
+  final List<CityModel> _seed = <CityModel>[
+    const CityModel(name: 'Garanhuns'),
+    const CityModel(name: 'Recife'),
+    const CityModel(name: 'São Paulo'),
+    const CityModel(name: 'Rio de Janeiro'),
   ];
 
   @override
@@ -46,7 +48,7 @@ class LocaisViewModel extends GetxController {
     // 1) Restaurar favoritos → retorna extras (não-seed)
     final extras = await _restoreFavorites();
 
-    // 2) Popular _all com seeds + extras
+    // 2) Popular _all com seeds (já possivelmente marcados como favoritos) + extras
     _all.assignAll(_seed);
     if (extras.isNotEmpty) _all.addAll(extras);
 
@@ -55,9 +57,7 @@ class LocaisViewModel extends GetxController {
     _warmupSeedTemps();
   }
 
-  // ---------------------------------------------------------------------------
-  // BUSCA
-  // ---------------------------------------------------------------------------
+  // ---------------- BUSCA ----------------
   void onSearchChanged(String text) => _query.value = text;
   void filterCities(String text) => onSearchChanged(text);
 
@@ -72,15 +72,20 @@ class LocaisViewModel extends GetxController {
   }
 
   Future<void> _searchOnline(String q) async {
+    // Guard para evitar aplicar resultado atrasado
+    final myQuery = q.trim().toLowerCase();
+
     loading.value = true;
     try {
       final raw = await _svc.searchCities(q, limit: 15);
+
+      if (_query.value.trim().toLowerCase() != myQuery) return;
 
       // Dedup por (name|state|country)
       final seen = <String>{};
       final online = <CityModel>[];
       for (final m in raw) {
-        final c = CityModel.fromOpenWeatherGeocode(m);
+        final c = CityModel.fromOpenWeatherGeocode(m); // isFromSearch = true
         final key =
             '${c.name.toLowerCase()}|${(c.state ?? '').toLowerCase()}|${(c.country ?? '').toLowerCase()}';
         if (seen.add(key)) online.add(c);
@@ -88,6 +93,8 @@ class LocaisViewModel extends GetxController {
 
       // Hidrata coordenadas + min/max
       await Future.wait(online.map(_fetchTempsAndCoordsIfNeeded));
+
+      if (_query.value.trim().toLowerCase() != myQuery) return;
 
       // Remove apenas resultados de busca não-favoritos e insere os novos
       _removeSearchResults();
@@ -103,9 +110,7 @@ class LocaisViewModel extends GetxController {
     _all.removeWhere((e) => e.isFromSearch && !e.isFavorite);
   }
 
-  // ---------------------------------------------------------------------------
-  // ADIÇÃO
-  // ---------------------------------------------------------------------------
+  // ---------------- ADIÇÃO ----------------
   Future<void> addCity(CityModel city) async {
     final hydrated = await _fetchTempsAndCoordsIfNeeded(city);
     _mergeIntoAll(hydrated);
@@ -140,9 +145,7 @@ class LocaisViewModel extends GetxController {
     }
   }
 
-  // ---------------------------------------------------------------------------
-  // FAVORITOS
-  // ---------------------------------------------------------------------------
+  // ---------------- FAVORITOS ----------------
   Future<void> toggleFavorite(CityModel city) async {
     final idx = _all.indexWhere((c) => _samePlace(c, city));
     if (idx >= 0) {
@@ -220,9 +223,7 @@ class LocaisViewModel extends GetxController {
     return extras;
   }
 
-  // ---------------------------------------------------------------------------
-  // SELEÇÃO
-  // ---------------------------------------------------------------------------
+  // ---------------- SELEÇÃO ----------------
   Future<void> selectCity(CityModel city) async {
     selectedCity.value = city;
 
@@ -236,9 +237,7 @@ class LocaisViewModel extends GetxController {
     } catch (_) {}
   }
 
-  // ---------------------------------------------------------------------------
-  // FILTRO (regra principal)
-  // ---------------------------------------------------------------------------
+  // ---------------- FILTRO (regra principal) ----------------
   void _applyFilter() {
     final q = _query.value.trim().toLowerCase();
 
@@ -256,9 +255,7 @@ class LocaisViewModel extends GetxController {
     }
   }
 
-  // ---------------------------------------------------------------------------
-  // Hidratação de coordenadas + min/max (sem travar UI)
-  // ---------------------------------------------------------------------------
+  // ---------------- Hidratação de coord + min/max ----------------
   Future<void> _warmupSeedTemps() async {
     unawaited(Future(() async {
       for (final c in List<CityModel>.from(_all)) {
@@ -303,5 +300,16 @@ class LocaisViewModel extends GetxController {
     }
 
     return city;
+  }
+
+  // ---------------- Limpeza do campo de busca ----------------
+  /// Limpa busca, remove resultados não-favoritos e volta a exibir apenas favoritos.
+  /// Além disso, incrementa `searchRev` para forçar o TextField a ser remontado vazio.
+  void clearSearch() {
+    _debounce?.cancel();
+    _query.value = '';
+    _removeSearchResults();
+    _applyFilter();
+    searchRev.value++; // força rebuild do TextField (Key muda)
   }
 }
