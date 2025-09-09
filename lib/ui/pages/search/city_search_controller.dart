@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../../data/models/city_model.dart';
 import '../../../data/services/api_service.dart';
+import '../../../viewmodels/locais/locais_viewmodel.dart';
 
 class CitySearchController extends GetxController {
   final ApiService apiService;
@@ -36,6 +37,8 @@ class CitySearchController extends GetxController {
   }
 
   void selectCity(CityModel city) {
+    final locaisViewModel = Get.find<LocaisViewModel>();
+    locaisViewModel.addCity(city);
     Get.back(result: city);
   }
 }
