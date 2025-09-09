@@ -1,17 +1,15 @@
 import 'package:get/get.dart';
 import 'package:atmus/data/models/city_model.dart';
+import 'package:atmus/data/services/api_service.dart';
 
 class LocaisViewModel extends GetxController {
-  // Lista “fonte da verdade” (pode vir de JSON depois)
   final RxList<CityModel> _cities = <CityModel>[
     // name, min, max, lat, lon
     CityModel(name: 'Garanhuns',   minTemp: 17, maxTemp: 27, lat:  -8.8829, lon: -36.4960),
     CityModel(name: 'Recife',      minTemp: 23, maxTemp: 30, lat: -8.0476, lon: -34.8770),
     CityModel(name: 'Salvador',    minTemp: 24, maxTemp: 31, lat: -12.9777, lon: -38.5016),
     CityModel(name: 'Fortaleza',   minTemp: 24, maxTemp: 30, lat:  -3.7319, lon: -38.5267),
-  ].obs;
-
-  // Exposta para a UI (lista filtrada)
+  ].obs;  // Exposta para a UI (lista filtrada)
   final RxList<CityModel> filteredCities = <CityModel>[].obs;
 
   // Cidade selecionada atualmente (drawer / gps pode sobrescrever via Home)
