@@ -20,26 +20,16 @@ import 'package:atmus/core/location_service.dart';
 import 'package:atmus/secrets.dart';
 
 void main() {
-  // >>> ESSENCIAL para plugins (SharedPreferences, Geolocator etc.)
+
   WidgetsFlutterBinding.ensureInitialized();
 
   initializeDateFormatting('pt_BR', null).then((_) {
-    // 1) Locais
     Get.put<LocaisViewModel>(LocaisViewModel());
-
-    // 2) Home
     Get.put<HomeViewModel>(HomeViewModel());
-
-    // 3) Infra localização/clima
     Get.put<LocationController>(LocationController(LocationService()));
     Get.put<WeatherService>(WeatherService(apiKey: Secrets.weatherApiKey));
     Get.put<WeatherController>(WeatherController());
-
-    // 4) Dados
     Get.put<DadosViewModel>(DadosViewModel(), permanent: true);
-    // Get.put<PrevisaoViewModel>(PrevisaoViewModel(), permanent: true);
-
-    // 5) Tema
     Get.put<ThemeController>(ThemeController(), permanent: true);
 
     runApp(const MyApp());

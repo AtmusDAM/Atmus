@@ -1,6 +1,4 @@
-// lib/viewmodels/historico/historico_viewmodel.dart
 import 'package:get/get.dart';
-
 import '../../data/models/openweather_history.dart';
 import '../../data/services/openweather_service.dart';
 import '../../secrets_openweather.dart';

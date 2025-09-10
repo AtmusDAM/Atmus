@@ -1,4 +1,3 @@
-// lib/services/gps_location_service.dart
 import 'package:geolocator/geolocator.dart';
 
 class GpsLocationService {

@@ -1,4 +1,3 @@
-// lib/data/models/city_model.dart
 import 'dart:convert';
 
 class CityModel {
@@ -6,15 +5,12 @@ class CityModel {
   final bool isFavorite;
   final double? minTemp;
   final double? maxTemp;
-
-  // Extras para integração com OpenWeather (opcionais)
   final double? lat;
   final double? lon;
   final String? state;   // OpenWeather usa "state"
   final String? country; // código ISO, ex.: "BR"
   final bool isFromSearch;
 
-  /// Tornei o construtor const para permitir listas const SE você quiser.
   const CityModel({
     required this.name,
     this.isFavorite = false,
@@ -51,7 +47,6 @@ class CityModel {
     );
   }
 
-  /// Factory para converter um item retornado por /geo/1.0/direct (OpenWeather)
   factory CityModel.fromOpenWeatherGeocode(Map<String, dynamic> m) {
     return CityModel(
       name: (m['name'] ?? '') as String,
@@ -63,7 +58,6 @@ class CityModel {
     );
   }
 
-  /// Serialização simples para persistir favoritos
   String serialize() {
     final map = {
       'name': name,

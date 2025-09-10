@@ -11,7 +11,6 @@ class HomePageContent extends StatelessWidget {
   final HomeViewModel controller = Get.find<HomeViewModel>();
   final ThemeController themeController = Get.find<ThemeController>();
 
-  /// Aceita código (ex.: "10d") ou URL completa
   Widget _getWeatherIcon(String icon, bool isDark) {
     if (icon.isEmpty) {
       return Icon(Icons.cloud, color: isDark ? Colors.white : Colors.black, size: 48);

@@ -74,7 +74,6 @@ class _SplashPageState extends State<SplashPage>
 
   @override
   Widget build(BuildContext context) {
-    // Dimensões responsivas
     final size = MediaQuery.of(context).size;
     final logoSize = min(size.width, size.height) * 0.38;
 
@@ -116,7 +115,6 @@ class _SplashPageState extends State<SplashPage>
                   ),
                 ),
 
-                // Logo com fade + scale ("breathing")
                 FadeTransition(
                   opacity: _fadeIn,
                   child: Transform.scale(

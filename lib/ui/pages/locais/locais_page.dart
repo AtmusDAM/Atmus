@@ -40,7 +40,6 @@ class LocaisPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Título + fechar
                 Padding(
                   padding: const EdgeInsets.all(16),
                   child: Row(
@@ -62,7 +61,6 @@ class LocaisPage extends StatelessWidget {
                           color: isDark ? Colors.white : Colors.black,
                         ),
                         onPressed: () {
-                          // <<< limpa busca ao sair
                           controller.clearSearch();
                           Navigator.of(context).pop();
                         },
@@ -78,7 +76,6 @@ class LocaisPage extends StatelessWidget {
                     vertical: 8,
                   ),
                   child: Obx(() {
-                    // Key muda quando clearSearch() é chamado → TextField “zera”
                     return TextField(
                       key: ValueKey(controller.searchRev.value),
                       onChanged: controller.filterCities,
@@ -115,7 +112,6 @@ class LocaisPage extends StatelessWidget {
                   }),
                 ),
 
-                // Botão "Usar minha localização"
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
                   child: Material(
@@ -125,7 +121,6 @@ class LocaisPage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                       onTap: () async {
                         final weatherCtl = Get.find<WeatherController>();
-                        // <<< limpa busca ao sair por aqui também
                         controller.clearSearch();
 
                         if (Scaffold.maybeOf(context)?.isDrawerOpen ?? false) {
@@ -225,7 +220,6 @@ class LocaisPage extends StatelessWidget {
                                 home.clearGpsOverride();
 
                                 controller.selectCity(city);
-                                // <<< limpa busca ao sair pela seleção
                                 controller.clearSearch();
 
                                 Navigator.of(context).pop();

@@ -18,7 +18,6 @@ class AppPages {
   ];
 }
 
-// Apenas um placeholder pra navegação funcionar
 class _HomePlaceholder extends StatelessWidget {
   const _HomePlaceholder({super.key});
   @override

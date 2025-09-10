@@ -1,10 +1,9 @@
-// lib/data/repositories/weather_repository.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import 'package:atmus/secrets.dart';
 import '../models/weather_model.dart';
-import '../models/forecast_model.dart'; // ADD: modelo da previsão
+import '../models/forecast_model.dart';
 
 class WeatherRepository {
   static const String _host = 'api.openweathermap.org';
@@ -55,7 +54,6 @@ class WeatherRepository {
     }
   }
 
-  /// NOVO: previsão 5 dias / 3h
   Future<Forecast?> getWeatherForecast(String city) async {
     try {
       final uri = Uri.https(_host, '/data/2.5/forecast', {
@@ -71,7 +69,7 @@ class WeatherRepository {
       }
 
       final Map<String, dynamic> data = json.decode(res.body);
-      return Forecast.fromJson(data); // Usa seu Forecast model
+      return Forecast.fromJson(data);
     } catch (_) {
       return null;
     }

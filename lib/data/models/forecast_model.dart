@@ -1,11 +1,3 @@
-/// Forecast model para OpenWeather "5 day / 3 hour forecast"
-/// Endpoint: /data/2.5/forecast
-///
-/// - `items`: lista de previsões a cada 3h
-/// - `dailySummaries`: agregados por dia
-/// - Compatibilidade com seus ViewModels:
-///     ForecastItem.dateTime, .temp, .icon, .pop
-
 class Forecast {
   final String city;
   final List<ForecastItem> items;
@@ -32,7 +24,7 @@ class Forecast {
 
       return ForecastItem(
         dateTimeText: (m['dt_txt'] ?? '').toString(),           // "YYYY-MM-DD HH:mm:ss"
-        timestamp: (m['dt'] is num) ? (m['dt'] as num).toInt() : 0, // epoch (s)
+        timestamp: (m['dt'] is num) ? (m['dt'] as num).toInt() : 0,
         tempC: _toD(main['temp']),
         tempMinC: _toD(main['temp_min']),
         tempMaxC: _toD(main['temp_max']),
@@ -40,8 +32,7 @@ class Forecast {
         humidity: _toI(main['humidity']),
         pressure: _toI(main['pressure']),
         windMs: _toD(wind['speed']),
-        rain3hMm: _toD(rain['3h']),
-        // OpenWeather traz "pop" (0..1) na previsão 3h:
+        rain3hMm: _toD(rain['3h']), // OpenWeather traz "pop" (0..1) na previsão 3h:
         pop: _toD(m['pop']),
         description: (first['description'] ?? '').toString(),
         iconUrl: iconUrl,
@@ -51,7 +42,6 @@ class Forecast {
     return Forecast(city: city, items: parsed);
   }
 
-  /// Agrupa por dia (YYYY-MM-DD) e calcula min/máx, chuva total etc.
   List<DailySummary> get dailySummaries {
     final Map<String, List<ForecastItem>> byDay = {};
     for (final it in items) {
@@ -113,18 +103,18 @@ class Forecast {
 }
 
 class ForecastItem {
-  final String dateTimeText; // "YYYY-MM-DD HH:mm:ss"
-  final int timestamp;       // epoch seconds
+  final String dateTimeText;
+  final int timestamp;       //
 
   final double tempC;
   final double tempMinC;
   final double tempMaxC;
   final double feelsLikeC;
 
-  final int humidity;   // %
+  final int humidity;
   final int pressure;   // hPa
-  final double windMs;  // m/s
-  final double rain3hMm; // mm no bloco de 3h
+  final double windMs;
+  final double rain3hMm;
   final double pop;     // probabilidade (0..1)
 
   final String description;
@@ -146,22 +136,19 @@ class ForecastItem {
     required this.iconUrl,
   });
 
-  /// Compat: seus ViewModels usam `item.dateTime`
   DateTime get dateTime =>
       DateTime.fromMillisecondsSinceEpoch(timestamp * 1000, isUtc: true).toLocal();
 
-  /// Compat: seus ViewModels usam `item.temp`
   double get temp => tempC;
 
-  /// Compat: seus ViewModels usam `item.icon`
+
   String get icon => iconUrl;
 
-  /// "2025-09-04 12:00:00" -> "2025-09-04"
   String get dateKey => dateTimeText.isNotEmpty ? dateTimeText.substring(0, 10) : '';
 }
 
 class DailySummary {
-  final String day;        // "YYYY-MM-DD"
+  final String day;
   final double tempMinC;
   final double tempMaxC;
   final double rainMm;

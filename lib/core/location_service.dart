@@ -1,13 +1,11 @@
 import 'package:geolocator/geolocator.dart';
 
-
 class LocationFailure implements Exception {
   final String message;
   LocationFailure(this.message);
   @override
   String toString() => message;
 }
-
 
 class LocationService {
   Future<void> _ensureReady() async {
@@ -18,19 +16,15 @@ class LocationService {
       );
     }
 
-
     LocationPermission permission = await Geolocator.checkPermission();
-
 
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
     }
 
-
     if (permission == LocationPermission.denied) {
       throw LocationFailure('Permissão de localização negada. Conceda a permissão para continuar.');
     }
-
 
     if (permission == LocationPermission.deniedForever) {
       throw LocationFailure(
@@ -39,8 +33,6 @@ class LocationService {
     }
   }
 
-
-  /// Obtém a última posição conhecida (rápida) ou a posição atual (precisa).
   Future<Position> getCurrentPosition({bool highAccuracy = false}) async {
     await _ensureReady();
 
@@ -50,15 +42,12 @@ class LocationService {
       return last;
     }
 
-
     return Geolocator.getCurrentPosition(
       desiredAccuracy: highAccuracy ? LocationAccuracy.best : LocationAccuracy.medium,
       timeLimit: const Duration(seconds: 10),
     );
   }
 
-
-  /// Abrir configurações do app/localização quando necessário
   Future<void> openSettings() async {
     await Geolocator.openAppSettings();
     await Geolocator.openLocationSettings();
