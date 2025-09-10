@@ -86,8 +86,6 @@ class OpenWeatherService {
     return list.cast<Map<String, dynamic>>();
   }
 
-  // ---------------- Histórico: 1 dia ----------------
-
   Future<OwDayHistory> getOneDayHistory({
     required double lat,
     required double lon,
@@ -96,16 +94,14 @@ class OpenWeatherService {
   }) async {
     if (preferV3) {
       try {
-        // v3: multi-amostragem (ex.: a cada 3h) + agregação
         return await _getOneDayHistoryV3MultiSample(
           lat: lat,
           lon: lon,
           dayUtc: dayUtc,
           lang: lang,
-          strideHours: 3, // ajuste para 6 se quiser reduzir chamadas
+          strideHours: 3,
         );
       } on OpenWeatherAuthError {
-        // fallback para 2.5 (se disponível na sua conta)
         return await _getOneDayHistoryV25(
           lat: lat,
           lon: lon,
@@ -128,7 +124,6 @@ class OpenWeatherService {
   int _noonEpoch(DateTime dayUtc) =>
       (DateTime.utc(dayUtc.year, dayUtc.month, dayUtc.day, 12).millisecondsSinceEpoch / 1000).round();
 
-  // v3 com multi-amostragem
   Future<OwDayHistory> _getOneDayHistoryV3MultiSample({
     required double lat,
     required double lon,
@@ -173,9 +168,8 @@ class OpenWeatherService {
           if (seen.add(h1.dt)) hours.add(h1);
         }
       } on OpenWeatherAuthError {
-        rethrow; // deixa o caller cair no fallback 2.5
+        rethrow;
       } catch (_) {
-        // ignora falhas pontuais de alguma hora
       }
     }
 
@@ -183,7 +177,6 @@ class OpenWeatherService {
     return OwDayHistory(dayUtc: DateTime.utc(dayUtc.year, dayUtc.month, dayUtc.day), hours: hours);
   }
 
-  // v2.5: em muitas contas retorna o array "hourly" do dia inteiro de uma vez
   Future<OwDayHistory> _getOneDayHistoryV25({
     required double lat,
     required double lon,
@@ -223,8 +216,6 @@ class OpenWeatherService {
     }
     return out;
   }
-
-  // ---------------- Parsing comum ----------------
 
   List<Map<String, dynamic>> _extractHourly(Map<String, dynamic> jsonMap) {
     final vHourly = jsonMap['hourly'];

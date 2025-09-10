@@ -9,7 +9,6 @@ import 'package:intl/intl.dart';
 class PrevisaoPage extends StatelessWidget {
   const PrevisaoPage({super.key});
 
-  /// Aceita código (ex.: "10d") OU URL completa; usa HTTPS e fallback.
   Widget _getWeatherIcon(String icon, bool isDark) {
     if (icon.isEmpty) {
       return Icon(Icons.wb_sunny, color: isDark ? Colors.yellow : Colors.orange, size: 22);
@@ -103,7 +102,6 @@ class PrevisaoPage extends StatelessWidget {
           color: bgColor,
           child: Column(
             children: [
-              // HEADER (abre a gaveta da Home)
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: Row(
@@ -143,7 +141,6 @@ class PrevisaoPage extends StatelessWidget {
                 ),
               ),
 
-              // CORPO
               Expanded(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -161,7 +158,6 @@ class PrevisaoPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 12),
 
-                      // Card 1: resumo + hora a hora
                       _card(
                         isDark: isDark,
                         child: Obx(() {
@@ -209,7 +205,6 @@ class PrevisaoPage extends StatelessWidget {
 
                       const SizedBox(height: 24),
 
-                      // Card 2: previsão por dia
                       _card(
                         isDark: isDark,
                         child: Obx(() {

@@ -8,19 +8,14 @@ import 'package:atmus/data/models/city_model.dart';
 
 class DadosViewModel extends GetxController {
   final WeatherRepository _repository = WeatherRepository();
-
-  // Dependências reais
   final LocaisViewModel _locais = Get.find<LocaisViewModel>();
   final HomeViewModel _home = Get.find<HomeViewModel>();
 
-  /// === Alias para compatibilidade com a página ===
   LocaisViewModel get locaisController => _locais;
 
-  // Estado básico
   final isLoading = false.obs;
   final error = RxnString();
 
-  // Campos “novos” (fonte de verdade)
   final pressao = 0.obs;     // hPa
   final umidade = 0.obs;     // %
   final ventoMs = 0.0.obs;   // m/s
@@ -30,7 +25,6 @@ class DadosViewModel extends GetxController {
   final chuvaTarde = 0.obs;  // %
   final chuvaNoite = 0.obs;  // %
 
-  /// === Aliases com os nomes que a página usa ===
   final vento = 0.0.obs;       // alias de ventoMs (double)
   final ventoInt = 0.obs;      // versão inteira para UIs que esperam RxInt
   final indiceUV = 'N/D'.obs;  // alias de uv
@@ -44,14 +38,11 @@ class DadosViewModel extends GetxController {
 
     _run();
 
-    // Recarrega ao trocar cidade na gaveta
     ever<CityModel?>(_locais.selectedCity, (_) => _run());
 
-    // Recarrega quando a Home muda a localização efetiva (GPS ou seleção por lat/lon)
     ever<String>(_home.lastQuery, (_) => _run());
   }
 
-  /// Permite a outros componentes forçarem refresh
   void refreshFromSelection() {
     _run();
   }
@@ -75,7 +66,6 @@ class DadosViewModel extends GetxController {
         return;
       }
 
-      // Item mais próximo de agora para pressão/umidade/vento
       final now = DateTime.now();
       ForecastItem current = f.items.first;
       for (final it in f.items) {
@@ -88,14 +78,12 @@ class DadosViewModel extends GetxController {
       umidade.value = current.humidity;
 
       ventoMs.value = current.windMs;
-      vento.value   = current.windMs;          // mantém double
-      ventoInt.value = current.windMs.round(); // sincroniza inteiro
+      vento.value   = current.windMs;
+      ventoInt.value = current.windMs.round();
 
-      // UV não vem desse endpoint → mantém “N/D”
       uv.value = 'N/D';
       indiceUV.value = 'N/D';
 
-      // Probabilidade de precipitação por período nas próximas 24h
       double manhaSum = 0.0, tardeSum = 0.0, noiteSum = 0.0;
       int manhaCount = 0, tardeCount = 0, noiteCount = 0;
 
@@ -123,7 +111,6 @@ class DadosViewModel extends GetxController {
       chuvaTarde.value = _avgPct(tardeSum, tardeCount);
       chuvaNoite.value = _avgPct(noiteSum, noiteCount);
 
-      // aliases sincronizados
       precipitacaoManha.value = chuvaManha.value;
       precipitacaoTarde.value = chuvaTarde.value;
       precipitacaoNoite.value = chuvaNoite.value;
@@ -134,8 +121,6 @@ class DadosViewModel extends GetxController {
     }
   }
 
-  /// Obtém o nome da cidade sem depender de gpsCity:
-  /// 1) cidade selecionada na gaveta; 2) nome atual exposto pela Home (weatherJson['name'])
   String? _resolveCityName() {
     final selected = _locais.selectedCity.value?.name;
     if (selected != null && selected.trim().isNotEmpty) {
@@ -149,7 +134,6 @@ class DadosViewModel extends GetxController {
         if (name.trim().isNotEmpty) return name.trim();
       }
     } catch (_) {
-      // Se o Home não expuser weatherJson, apenas ignore
     }
 
     return null;

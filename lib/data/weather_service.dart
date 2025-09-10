@@ -1,4 +1,3 @@
-// lib/data/weather_service.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
@@ -14,15 +13,13 @@ class Weather {
   final double tempC;
   final String condition;
   final String iconUrl;
-
-  // Campos extras para alimentar suas telas
   final double tempMinC;
   final double tempMaxC;
   final double feelsLikeC;
   final double rain1hMm;
-  final int humidity;     // %
-  final int pressure;     // hPa
-  final double windMs;    // m/s
+  final int humidity;
+  final int pressure;
+  final double windMs;
 
   Weather({
     required this.city,
@@ -38,7 +35,6 @@ class Weather {
     required this.windMs,
   });
 
-  /// Parser para /data/2.5/weather (OpenWeather)
   factory Weather.fromOpenWeatherJson(Map<String, dynamic> json) {
     final name = (json['name'] ?? '').toString();
     final main = json['main'] ?? {};
@@ -118,7 +114,6 @@ class WeatherService {
     return Weather.fromOpenWeatherJson(data);
   }
 
-  /// Alias para manter compatibilidade se houver chamadas antigas
   Future<Weather> getByLatLon(double lat, double lon) {
     return getCurrentByLatLon(lat, lon);
   }

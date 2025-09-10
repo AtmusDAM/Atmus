@@ -24,7 +24,6 @@ class WeatherController extends GetxController {
         desiredAccuracy: LocationAccuracy.high,
       );
 
-      // (Opcional) reverse geocoding para exibir nome amigável
       String cityName = 'Minha localização';
       try {
         final rev = await _ow.reverseGeocode(pos.latitude, pos.longitude);
@@ -51,7 +50,6 @@ class WeatherController extends GetxController {
     }
   }
 
-  /// Compat: alguns pontos podem chamar direto por coordenadas
   Future<void> fetchByCoordinates(double lat, double lon) async {
     error.value = null;
     try {
@@ -61,7 +59,6 @@ class WeatherController extends GetxController {
     }
   }
 
-  /// Compat: alguns pontos podem chamar por nome
   Future<void> fetchByCityName(String city) async {
     error.value = null;
     try {
@@ -71,7 +68,6 @@ class WeatherController extends GetxController {
     }
   }
 
-  // ---------- helpers ----------
   Future<bool> _ensureLocationPermission() async {
     final serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) return false;
