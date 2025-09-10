@@ -78,20 +78,19 @@ class _ConfiguracaoPageState extends State<ConfiguracaoPage> {
                         title: Text("Celsius", style: TextStyle(color: textColor)),
                         value: "Celsius",
                         groupValue: homeController.unidade.value,
-                        onChanged: (value) => homeController.unidade.value = value!,
+                        onChanged: (value) => homeController.setUnidadeLabel(value!),
                         activeColor: Colors.blue,
                       )),
                       Obx(() => RadioListTile<String>(
                         title: Text("Fahrenheit", style: TextStyle(color: textColor)),
                         value: "Fahrenheit",
                         groupValue: homeController.unidade.value,
-                        onChanged: (value) => homeController.unidade.value = value!,
+                        onChanged: (value) => homeController.setUnidadeLabel(value!),
                         activeColor: Colors.blue,
                       )),
 
                       const SizedBox(height: 24),
 
-                      // Modo de exibição
                       Text(
                         "Modo de exibição",
                         style: TextStyle(
