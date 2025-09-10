@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:atmus/data/models/city_model.dart';
-import 'package:atmus/services/openweather_service.dart';
+import 'package:atmus/data/services/openweather_service.dart';
 import 'package:atmus/viewmodels/home/home_viewmodel.dart';
 
 class LocaisViewModel extends GetxController {
@@ -13,7 +13,6 @@ class LocaisViewModel extends GetxController {
       : _svc = service ?? OpenWeatherService();
 
   final RxList<CityModel> _all = <CityModel>[].obs;
-
   final RxList<CityModel> filteredCities = <CityModel>[].obs;
 
   final RxString _query = ''.obs;
@@ -40,10 +39,8 @@ class LocaisViewModel extends GetxController {
 
   Future<void> _boot() async {
     final extras = await _restoreFavorites();
-
     _all.assignAll(_seed);
     if (extras.isNotEmpty) _all.addAll(extras);
-
     _applyFilter();
     _warmupSeedTemps();
   }
@@ -63,11 +60,9 @@ class LocaisViewModel extends GetxController {
 
   Future<void> _searchOnline(String q) async {
     final myQuery = q.trim().toLowerCase();
-
     loading.value = true;
     try {
       final raw = await _svc.searchCities(q, limit: 15);
-
       if (_query.value.trim().toLowerCase() != myQuery) return;
 
       final seen = <String>{};
@@ -79,19 +74,17 @@ class LocaisViewModel extends GetxController {
         if (seen.add(key)) online.add(c);
       }
 
-      await Future.wait(online.map(_fetchTempsAndCoordsIfNeeded));
-
+      final hydrated = await Future.wait(online.map(_fetchTempsAndCoordsIfNeeded));
       if (_query.value.trim().toLowerCase() != myQuery) return;
 
       _removeSearchResults();
-      _all.addAll(online);
+      _all.addAll(hydrated);
       _applyFilter();
     } finally {
       loading.value = false;
     }
   }
 
-  /// Remove SOMENTE resultados de busca que não são favoritos
   void _removeSearchResults() {
     _all.removeWhere((e) => e.isFromSearch && !e.isFavorite);
   }
@@ -202,21 +195,23 @@ class LocaisViewModel extends GetxController {
   }
 
   Future<void> selectCity(CityModel city) async {
-    selectedCity.value = city;
-
+    CityModel hydrated = city;
+    if (city.lat == null || city.lon == null) {
+      hydrated = await _fetchTempsAndCoordsIfNeeded(city);
+    }
+    selectedCity.value = hydrated;
     try {
       final home = Get.find<HomeViewModel>();
-      if (city.lat != null && city.lon != null) {
-        await home.fetchByLatLon('${city.lat},${city.lon}');
+      if (hydrated.lat != null && hydrated.lon != null) {
+        await home.fetchByLatLon('${hydrated.lat},${hydrated.lon}');
       } else {
-        await home.fetchByCityName(city.name);
+        await home.fetchByCityName(hydrated.name);
       }
     } catch (_) {}
   }
 
   void _applyFilter() {
     final q = _query.value.trim().toLowerCase();
-
     if (q.isEmpty) {
       filteredCities.assignAll(_all.where((c) => c.isFavorite));
     } else {
@@ -232,7 +227,10 @@ class LocaisViewModel extends GetxController {
   Future<void> _warmupSeedTemps() async {
     unawaited(Future(() async {
       for (final c in List<CityModel>.from(_all)) {
-        if (c.lat == null || c.lon == null || c.minTemp == null || c.maxTemp == null) {
+        final needs = (c.lat == null || c.lon == null) ||
+            (c.minTemp == null || c.maxTemp == null) ||
+            (c.minTemp != null && c.maxTemp != null && c.minTemp == c.maxTemp);
+        if (needs) {
           final updated = await _fetchTempsAndCoordsIfNeeded(c);
           final idx = _all.indexWhere((x) => identical(x, c));
           if (idx >= 0) _all[idx] = updated;
@@ -258,18 +256,31 @@ class LocaisViewModel extends GetxController {
       if (lat != null && lon != null) {
         final cur = await _svc.getCurrentByLatLon(lat, lon);
         final main = (cur['main'] as Map?) ?? {};
-        final double? tmin = (main['temp_min'] as num?)?.toDouble();
-        final double? tmax = (main['temp_max'] as num?)?.toDouble();
+        final double? tNow = (main['temp'] as num?)?.toDouble();
+        double? tmin = (main['temp_min'] as num?)?.toDouble();
+        double? tmax = (main['temp_max'] as num?)?.toDouble();
+
+        try {
+          final dyn = _svc as dynamic;
+          final r = await dyn.getMinMaxNext24h(lat, lon);
+          if (r != null) {
+            final double? fMin =
+            (r is Map) ? (r['tmin'] as num?)?.toDouble() : (r.tmin as num?)?.toDouble();
+            final double? fMax =
+            (r is Map) ? (r['tmax'] as num?)?.toDouble() : (r.tmax as num?)?.toDouble();
+            if (fMin != null) tmin = fMin;
+            if (fMax != null) tmax = fMax;
+          }
+        } catch (_) {}
 
         return city.copyWith(
           lat: lat,
           lon: lon,
-          minTemp: tmin,
-          maxTemp: tmax,
+          minTemp: tmin ?? tNow,
+          maxTemp: tmax ?? tNow,
         );
       }
-    } catch (_) {
-    }
+    } catch (_) {}
 
     return city;
   }
@@ -280,5 +291,43 @@ class LocaisViewModel extends GetxController {
     _removeSearchResults();
     _applyFilter();
     searchRev.value++;
+  }
+
+  CityModel? get currentCity => selectedCity.value;
+
+  ({double lat, double lon})? get selectedLatLon {
+    final c = selectedCity.value;
+    if (c?.lat != null && c?.lon != null) {
+      return (lat: c!.lat!, lon: c.lon!);
+    }
+    return null;
+  }
+
+  Future<({double lat, double lon})?> ensureSelectedCoords() async {
+    final c = selectedCity.value;
+    if (c == null) return null;
+    if (c.lat != null && c.lon != null) return (lat: c.lat!, lon: c.lon!);
+    final hydrated = await _fetchTempsAndCoordsIfNeeded(c);
+    selectedCity.value = hydrated;
+    if (hydrated.lat != null && hydrated.lon != null) {
+      return (lat: hydrated.lat!, lon: hydrated.lon!);
+    }
+    return null;
+  }
+
+  Future<void> selectByCoords(double lat, double lon, {String name = 'GPS'}) async {
+    final city = CityModel(
+      name: name,
+      lat: lat,
+      lon: lon,
+      isFavorite: false,
+      isFromSearch: false,
+    );
+    final hydrated = await _fetchTempsAndCoordsIfNeeded(city);
+    selectedCity.value = hydrated;
+    try {
+      final home = Get.find<HomeViewModel>();
+      await home.fetchByLatLon('$lat,$lon');
+    } catch (_) {}
   }
 }

@@ -2,7 +2,7 @@ import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:latlong2/latlong.dart';
 
-import 'package:atmus/services/openweather_service.dart';
+import 'package:atmus/data/services/openweather_service.dart';
 import 'package:atmus/data/models/city_model.dart';
 
 class HomeViewModel extends GetxController {

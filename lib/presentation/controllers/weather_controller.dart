@@ -2,7 +2,7 @@ import 'package:get/get.dart';
 import 'package:geolocator/geolocator.dart';
 
 import 'package:atmus/viewmodels/home/home_viewmodel.dart';
-import 'package:atmus/services/openweather_service.dart';
+import 'package:atmus/data/services/openweather_service.dart';
 
 class WeatherController extends GetxController {
   final error = RxnString();
