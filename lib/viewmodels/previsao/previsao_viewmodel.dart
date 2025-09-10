@@ -1,3 +1,4 @@
+import 'package:atmus/data/services/api_service.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
@@ -9,43 +10,36 @@ import 'package:atmus/data/models/city_model.dart';
 
 class PrevisaoViewModel extends GetxController {
   final WeatherRepository _repository = WeatherRepository();
+  final ApiService _api = ApiService();
 
-  // Dependências reais
   final LocaisViewModel _locais = Get.find<LocaisViewModel>();
   final HomeViewModel _home = Get.find<HomeViewModel>();
 
-  // === ALIASES para a página (mantém compatibilidade com sua UI) ===
   LocaisViewModel get locaisController => _locais;
 
-  // Estado básico
   final isLoading = false.obs;
   final error = RxnString();
   final forecast = Rxn<Forecast>();
 
-  // === CAMPOS QUE A PÁGINA USA ===
   final RxString resumo = 'Carregando...'.obs;
 
-  /// "HH:00" -> temperatura (int)
   final RxMap<String, int> temperaturasHora = <String, int>{}.obs;
 
-  /// "HH:00" -> ícone (código ou URL)
   final RxMap<String, String> iconesHora = <String, String>{}.obs;
 
-  /// "Hoje/Amanhã/segunda..." -> [min, max]
   final RxMap<String, List<int>> temperaturas = <String, List<int>>{}.obs;
+
+  final RxList<Map<String, dynamic>> alerts = <Map<String, dynamic>>[].obs;
+
 
   @override
   void onInit() {
     super.onInit();
 
-    // 1) carga inicial
     _run();
 
-    // 2) quando mudar a cidade da gaveta
     ever<CityModel?>(_locais.selectedCity, (_) => _run());
 
-    // 3) quando a Home mudar a localização efetiva (via GPS ou seleção por lat/lon).
-    //    Usamos lastQuery como “sinal” de mudança e tentamos ler o nome da cidade da Home.
     ever<String>(_home.lastQuery, (_) => _run());
   }
 
@@ -53,18 +47,28 @@ class PrevisaoViewModel extends GetxController {
     isLoading.value = true;
     error.value = null;
 
+    final city = _locais.selectedCity.value;
+
+    if (city != null && city.lat != null && city.lon != null) {
+      final oneCall = await _api.fetchWeatherOneCall(city.lat!, city.lon!);
+      if (oneCall != null && oneCall.containsKey('alerts')) {
+        final List<dynamic> raw = oneCall['alerts'];
+        alerts.value = raw.cast<Map<String, dynamic>>();
+      } else {
+        alerts.clear();
+      }
+    }
+
     try {
       final cityName = _resolveCityName();
       if (cityName == null || cityName.trim().isEmpty) {
         error.value = 'Cidade não definida.';
-        isLoading.value = false;
         return;
       }
 
       final Forecast? f = await _repository.getWeatherForecast(cityName);
       if (f == null || f.items.isEmpty) {
         error.value = 'Falha ao carregar previsão.';
-        isLoading.value = false;
         return;
       }
 
@@ -80,15 +84,12 @@ class PrevisaoViewModel extends GetxController {
     }
   }
 
-  /// Tenta obter o nome da cidade de forma robusta sem depender de gpsCity.
   String? _resolveCityName() {
-    // 1) Se a gaveta tiver uma cidade selecionada, priorize essa
     final selected = _locais.selectedCity.value?.name;
     if (selected != null && selected.trim().isNotEmpty) {
       return selected.trim();
     }
 
-    // 2) Caso contrário, tente ler o nome exibido atualmente na Home (se ela expõe weatherJson)
     try {
       final dynamic j = _home.weatherJson.value;
       if (j is Map<String, dynamic>) {
@@ -96,10 +97,8 @@ class PrevisaoViewModel extends GetxController {
         if (name.trim().isNotEmpty) return name.trim();
       }
     } catch (_) {
-      // se o HomeViewModel não tiver weatherJson, simplesmente ignore
     }
 
-    // 3) Sem fonte de nome
     return null;
   }
 
@@ -134,7 +133,7 @@ class PrevisaoViewModel extends GetxController {
     for (final item in within24h) {
       final key = dfHour.format(item.dateTime);
       temperaturasHora[key] = item.temp.round();
-      iconesHora[key] = item.icon; // aceita URL completa ou código
+      iconesHora[key] = item.icon;
     }
   }
 

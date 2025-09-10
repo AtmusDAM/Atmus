@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:atmus/viewmodels/home/home_viewmodel.dart';
 import 'package:atmus/viewmodels/previsao/previsao_viewmodel.dart';
 import 'package:atmus/viewmodels/configuracao/configuracao_viewmodel.dart';
+import 'package:intl/intl.dart';
 
 class PrevisaoPage extends StatelessWidget {
   const PrevisaoPage({super.key});
@@ -117,7 +118,8 @@ class PrevisaoPage extends StatelessWidget {
                         child: Obx(() => Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.location_on, color: isDark ? Colors.white : Colors.black),
+                            Icon(Icons.location_on,
+                                color: isDark ? Colors.white : Colors.black),
                             const SizedBox(width: 4),
                             Flexible(
                               child: Text(
@@ -221,10 +223,84 @@ class PrevisaoPage extends StatelessWidget {
                           }
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            children: controller.temperaturas.entries
-                                .map((e) {
+                            children: controller.temperaturas.entries.map((e) {
                               final minMax = e.value.map((v) => v.toDouble()).toList();
                               return _buildDiaItem(e.key, minMax, home, isDark);
+                            }).toList(),
+                          );
+                        }),
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      // Card 3: alertas climáticos
+                      _card(
+                        isDark: isDark,
+                        child: Obx(() {
+                          if (controller.isLoading.value && controller.alerts.isEmpty) {
+                            return const Center(
+                              child: Padding(
+                                padding: EdgeInsets.all(16),
+                                child: CircularProgressIndicator(),
+                              ),
+                            );
+                          }
+
+                          if (controller.alerts.isEmpty) {
+                            return Row(
+                              children: [
+                                Icon(Icons.check_circle, color: Colors.green, size: 22),
+                                const SizedBox(width: 8),
+                                Text("Nenhum alerta climático no momento",
+                                    style: TextStyle(
+                                        color: isDark ? Colors.white70 : Colors.black87,
+                                        fontSize: 14)),
+                              ],
+                            );
+                          }
+
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: controller.alerts.map((alert) {
+                              final start =
+                              DateTime.fromMillisecondsSinceEpoch(alert['start'] * 1000);
+                              final end =
+                              DateTime.fromMillisecondsSinceEpoch(alert['end'] * 1000);
+
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 6),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Icon(Icons.warning, color: Colors.redAccent, size: 22),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                            alert['event'] ?? 'Alerta climático',
+                                            style: TextStyle(
+                                                color: isDark ? Colors.white : Colors.black,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 15),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(alert['description'] ?? '',
+                                        style: TextStyle(
+                                            color: isDark ? Colors.white70 : Colors.black87,
+                                            fontSize: 13)),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      "Válido de ${DateFormat('dd/MM HH:mm').format(start)} até ${DateFormat('dd/MM HH:mm').format(end)}",
+                                      style: TextStyle(
+                                          color: Colors.orangeAccent, fontSize: 12),
+                                    ),
+                                  ],
+                                ),
+                              );
                             }).toList(),
                           );
                         }),

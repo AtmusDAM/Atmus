@@ -71,4 +71,28 @@ class ApiService {
       return [];
     }
   }
+
+  Future<Map<String, dynamic>?> fetchWeatherOneCall(double lat, double lon) async {
+    final url = Uri.https(host, '/data/3.0/onecall', {
+      'lat': lat.toString(),
+      'lon': lon.toString(),
+      'appid': apiKey,
+      'lang': 'pt_br',
+      'units': 'metric',
+    });
+
+    try {
+      final response = await http.get(url);
+      print('[OneCall] GET $url -> ${response.statusCode}');
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body) as Map<String, dynamic>;
+      } else {
+        return null;
+      }
+    } catch (e) {
+      print('[OneCall] Erro na requisição: $e');
+      return null;
+    }
+  }
+
 }
